@@ -1,7 +1,9 @@
 package com.studyos.cainter.util
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.AppOpsManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -9,7 +11,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
+import androidx.core.app.NotificationCompat
+import com.studyos.cainter.R
 import com.studyos.cainter.ui.distraction.BlockedAppActivity
 
 data class DistractingAppInfo(
@@ -39,27 +42,6 @@ object ZeroDistractionGuard {
         DistractingAppInfo("com.zhiliaoapp.musically", "TikTok", true),
         DistractingAppInfo("com.android.chrome", "Chrome Browser", false)
     )
-
-    fun hasAccessibilityPermission(context: Context): Boolean {
-        return try {
-            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager ?: return false
-            val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-            enabledServices.any { it.resolveInfo?.serviceInfo?.packageName == context.packageName }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    fun openAccessibilitySettings(context: Context) {
-        try {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            openUsageSettings(context)
-        }
-    }
 
     fun hasUsagePermission(context: Context): Boolean {
         return try {
@@ -148,6 +130,9 @@ object ZeroDistractionGuard {
             .apply()
     }
 
+    private var lastBlockedTime = 0L
+    private var lastBlockedPkg = ""
+
     fun checkAndBlockForegroundApp(
         context: Context,
         taskTitle: String,
@@ -171,6 +156,12 @@ object ZeroDistractionGuard {
         if (latestForegroundPackage != null && latestForegroundPackage != context.packageName) {
             val blocked = getBlockedPackages(context)
             if (blocked.contains(latestForegroundPackage)) {
+                if (latestForegroundPackage == lastBlockedPkg && (now - lastBlockedTime) < 1500L) {
+                    return true
+                }
+                lastBlockedTime = now
+                lastBlockedPkg = latestForegroundPackage
+
                 val appLabel = DEFAULT_APPS.firstOrNull { it.packageName == latestForegroundPackage }?.appName
                     ?: latestForegroundPackage
 
@@ -181,10 +172,58 @@ object ZeroDistractionGuard {
                     putExtra("TASK_TITLE", taskTitle)
                     putExtra("REMAINING_TIME", remainingTime)
                 }
-                context.startActivity(intent)
+
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {}
+
+                triggerFullScreenBlockNotification(context, appLabel, taskTitle, remainingTime, intent)
                 return true
             }
         }
         return false
+    }
+
+    private fun triggerFullScreenBlockNotification(
+        context: Context,
+        appName: String,
+        taskTitle: String,
+        remainingTime: String,
+        intent: Intent
+    ) {
+        try {
+            val channelId = "studyos_block_channel"
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    channelId,
+                    "Distraction Block Alerts",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Instant popups when a blocked app is opened"
+                    setBypassDnd(true)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                202,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val builder = NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.drawable.ic_timer)
+                .setContentTitle("🛡️ $appName is Blocked!")
+                .setContentText("Focus session active: $remainingTime remaining")
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setFullScreenIntent(pendingIntent, true)
+                .setAutoCancel(true)
+
+            notificationManager.notify(9002, builder.build())
+        } catch (e: Exception) {}
     }
 }

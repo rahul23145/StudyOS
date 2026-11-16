@@ -177,9 +177,7 @@ class TimerFragment : Fragment() {
 
         binding.swZeroDistraction.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                if (!ZeroDistractionGuard.hasAccessibilityPermission(context)) {
-                    showAccessibilityPermissionDialog()
-                } else if (!ZeroDistractionGuard.hasUsagePermission(context)) {
+                if (!ZeroDistractionGuard.hasUsagePermission(context)) {
                     showUsagePermissionDialog()
                 } else {
                     ZeroDistractionGuard.setEnabled(context, true)
@@ -196,29 +194,15 @@ class TimerFragment : Fragment() {
         }
     }
 
-    private fun showAccessibilityPermissionDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("🛡️ Enable Instant App Blocker")
-            .setMessage("To instantly block distracting apps (Instagram, YouTube, etc.) during focus timer sessions with 0ms latency, please turn ON 'StudyOS Focus Guard' under Accessibility in Android Settings.\n\n• 100% Offline & Private\n• NO Internet permissions required\n• Only guards during active study timers")
-            .setPositiveButton("Open Accessibility") { _, _ ->
-                ZeroDistractionGuard.openAccessibilitySettings(requireContext())
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                binding.swZeroDistraction.isChecked = false
-            }
-            .show()
-    }
-
     private fun showUsagePermissionDialog() {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("🛡️ Additional App Access")
-            .setMessage("Please also grant 'Usage Access' permission in Android Settings so StudyOS can monitor background app switches reliably.\n\n100% local and offline.")
+            .setTitle("🛡️ Enable App Blocker")
+            .setMessage("Zero Distraction Mode blocks chosen distracting apps (Instagram, YouTube, etc.) while your timer is running.\n\n• 100% Offline & Private (Zero internet permissions)\n• Please grant 'Usage Access' in Android Settings so StudyOS can detect when a distracting app is opened.")
             .setPositiveButton("Open Settings") { _, _ ->
                 ZeroDistractionGuard.openUsageSettings(requireContext())
             }
-            .setNegativeButton("Skip") { _, _ ->
-                ZeroDistractionGuard.setEnabled(requireContext(), true)
-                Toast.makeText(requireContext(), "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
+            .setNegativeButton("Cancel") { _, _ ->
+                binding.swZeroDistraction.isChecked = false
             }
             .show()
     }
@@ -227,11 +211,10 @@ class TimerFragment : Fragment() {
         super.onResume()
         val ctx = context ?: return
         val isGuardEnabled = ZeroDistractionGuard.isEnabled(ctx)
-        val hasAcc = ZeroDistractionGuard.hasAccessibilityPermission(ctx)
         val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
 
         if (isGuardEnabled) {
-            if (!hasAcc && !hasUsage) {
+            if (!hasUsage) {
                 binding.swZeroDistraction.isChecked = false
                 ZeroDistractionGuard.setEnabled(ctx, false)
             } else {
