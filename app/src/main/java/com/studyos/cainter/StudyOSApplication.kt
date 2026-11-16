@@ -17,7 +17,8 @@ class StudyOSApplication : Application() {
     val scheduleRepository by lazy {
         ScheduleRepository(
             database.scheduleDao(),
-            database.completionDao()
+            database.completionDao(),
+            database.scheduleTypeDao()
         )
     }
     val studyRepository by lazy {

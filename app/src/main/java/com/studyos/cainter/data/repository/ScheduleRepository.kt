@@ -3,15 +3,18 @@ package com.studyos.cainter.data.repository
 import com.studyos.cainter.data.default.DefaultScheduleProvider
 import com.studyos.cainter.data.local.CompletionDao
 import com.studyos.cainter.data.local.ScheduleDao
+import com.studyos.cainter.data.local.ScheduleTypeDao
 import com.studyos.cainter.data.local.entity.CompletionRecord
 import com.studyos.cainter.data.local.entity.ScheduleItem
+import com.studyos.cainter.data.local.entity.ScheduleType
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class ScheduleRepository(
     private val scheduleDao: ScheduleDao,
-    private val completionDao: CompletionDao
+    private val completionDao: CompletionDao,
+    private val scheduleTypeDao: ScheduleTypeDao
 ) {
 
     fun getScheduleForDay(dayOfWeek: Int): Flow<List<ScheduleItem>> {
@@ -56,6 +59,27 @@ class ScheduleRepository(
         } else {
             completionDao.removeCompletion(date, scheduleItemId)
         }
+    }
+
+    fun getAllScheduleTypes(): Flow<List<ScheduleType>> {
+        return scheduleTypeDao.getAllScheduleTypes()
+    }
+
+    fun getActiveScheduleType(): Flow<ScheduleType?> {
+        return scheduleTypeDao.getActiveScheduleType()
+    }
+
+    suspend fun createScheduleType(scheduleType: ScheduleType): Long {
+        return scheduleTypeDao.insert(scheduleType)
+    }
+
+    suspend fun deleteScheduleType(scheduleType: ScheduleType) {
+        scheduleTypeDao.delete(scheduleType)
+    }
+
+    suspend fun setActiveScheduleType(typeId: Long) {
+        scheduleTypeDao.clearActiveStatus()
+        scheduleTypeDao.setActiveStatus(typeId)
     }
 
     suspend fun calculateStreak(): Int {

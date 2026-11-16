@@ -9,7 +9,6 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.studyos.cainter"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -18,6 +17,22 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    flavorDimensions += "edition"
+    productFlavors {
+        create("cainter") {
+            dimension = "edition"
+            applicationId = "com.studyos.cainter"
+            versionName = "1.0.0-cainter"
+            manifestPlaceholders["appName"] = "StudyOS - CA Inter"
+        }
+        create("custom") {
+            dimension = "edition"
+            applicationId = "com.studyos.custom"
+            versionName = "1.0.0-custom"
+            manifestPlaceholders["appName"] = "StudyOS - Custom Routine"
         }
     }
 

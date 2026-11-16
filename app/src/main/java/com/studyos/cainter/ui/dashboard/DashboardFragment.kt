@@ -81,8 +81,9 @@ class DashboardFragment : Fragment() {
                     val auditToday = state.auditTracker?.completedLectures ?: 0
                     binding.tvAuditDone.text = "$auditToday / ${state.auditTracker?.totalLectures ?: 65}"
 
-                    // Study time
+                    // Study time & graph
                     binding.tvStudyHoursLogged.text = DateUtils.formatMinutesToHoursAndMinutes(state.studyMinutesToday)
+                    binding.dashboardChart.setData(state.chartData)
 
                     // Current Focus Card
                     if (state.currentItem != null) {

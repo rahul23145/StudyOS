@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.studyos.cainter.data.local.entity.StudySession
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
+import com.studyos.cainter.ui.common.DayStudyData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +17,7 @@ data class AnalyticsUiState(
     val todayMinutes: Int = 0,
     val weekMinutes: Int = 0,
     val streak: Int = 0,
+    val chartData: List<DayStudyData> = emptyList(),
     val recentSessions: List<StudySession> = emptyList()
 )
 
@@ -28,6 +30,10 @@ class AnalyticsViewModel(
     val uiState: StateFlow<AnalyticsUiState> = _uiState.asStateFlow()
 
     init {
+        loadData()
+    }
+
+    fun loadData() {
         viewModelScope.launch {
             val streak = scheduleRepository.calculateStreak()
 
@@ -36,10 +42,12 @@ class AnalyticsViewModel(
                 studyRepository.getWeekStudyMinutes(),
                 studyRepository.getRecentSessions()
             ) { todayMins, weekMins, sessions ->
+                val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = 8.0f)
                 AnalyticsUiState(
                     todayMinutes = todayMins,
                     weekMinutes = weekMins,
                     streak = streak,
+                    chartData = chart,
                     recentSessions = sessions.take(15)
                 )
             }.collect { state ->

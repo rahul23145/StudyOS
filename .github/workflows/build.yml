@@ -1,4 +1,4 @@
-name: Build StudyOS Debug APK
+name: Build StudyOS Debug APKs
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Both StudyOS APKs
     runs-on: ubuntu-latest
 
     steps:
@@ -35,48 +35,61 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK with Gradle
+      - name: Build Both Debug APKs with Gradle
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: Verify & Prepare Direct APK
+      - name: Verify & Prepare Direct APKs
         run: |
-          echo "Listing generated APK files:"
-          ls -la app/build/outputs/apk/debug/
-          cp app/build/outputs/apk/debug/app-debug.apk StudyOS.apk
+          echo "Listing all generated APK files:"
+          find app/build/outputs/apk/ -name "*.apk"
+          
+          # Copy CA Inter edition
+          cp $(find app/build/outputs/apk/cainter/ -name "*debug.apk" | head -n 1) StudyOS-CAInter.apk
+          
+          # Copy Custom edition
+          cp $(find app/build/outputs/apk/custom/ -name "*debug.apk" | head -n 1) StudyOS-Custom.apk
+          
+          # Copy to release folder
           mkdir -p release
-          cp app/build/outputs/apk/debug/app-debug.apk release/StudyOS.apk
+          cp StudyOS-CAInter.apk release/StudyOS-CAInter.apk
+          cp StudyOS-Custom.apk release/StudyOS-Custom.apk
 
-      - name: Upload Debug APK Artifact (Zip)
+      - name: Upload Debug APKs Artifact (Zip)
         uses: actions/upload-artifact@v4
         with:
-          name: StudyOS-CAInter-Debug-APK
-          path: app/build/outputs/apk/debug/*.apk
+          name: StudyOS-Both-APKs
+          path: |
+            StudyOS-CAInter.apk
+            StudyOS-Custom.apk
           retention-days: 30
 
-      - name: Publish Direct APK to GitHub Releases
+      - name: Publish Direct APKs to GitHub Releases
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         with:
-          tag_name: v1.0.0
-          name: "StudyOS v1.0.0 (Direct APK)"
+          tag_name: v1.1.0
+          name: "StudyOS v1.1.0 (Direct APKs with Study Graph)"
           body: |
-            ### 📱 Direct APK Download (No Unzipping Required)
-            Click **StudyOS.apk** below to download directly to your phone and install without extracting!
+            ### 📱 Direct APK Downloads (No Unzipping Required)
+            * **StudyOS-CAInter.apk**: Dedicated app for ICAI CA Intermediate (Rahul's routine + 7-Day Study Graph)
+            * **StudyOS-Custom.apk**: Dedicated app for other students/friends with custom schedule types, subjects & graph
           draft: false
           prerelease: false
-          files: StudyOS.apk
+          files: |
+            StudyOS-CAInter.apk
+            StudyOS-Custom.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit Direct APK to Repository
+      - name: Commit Direct APKs to Repository
         if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add release/StudyOS.apk
+          git add release/StudyOS-CAInter.apk release/StudyOS-Custom.apk
           if git diff --staged --quiet; then
-            echo "No changes in APK binary"
+            echo "No changes in APK binaries"
           else
-            git commit -m "chore: add direct downloadable StudyOS.apk binary [skip ci]"
+            git commit -m "chore: add direct downloadable StudyOS-CAInter.apk and StudyOS-Custom.apk [skip ci]"
             git push origin main
           fi

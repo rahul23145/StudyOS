@@ -9,6 +9,7 @@ import com.studyos.cainter.data.default.DefaultScheduleProvider
 import com.studyos.cainter.data.local.entity.CompletionRecord
 import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.ScheduleItem
+import com.studyos.cainter.data.local.entity.ScheduleType
 import com.studyos.cainter.data.local.entity.StudySession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,9 +20,10 @@ import kotlinx.coroutines.launch
         ScheduleItem::class,
         CompletionRecord::class,
         LectureTracker::class,
-        StudySession::class
+        StudySession::class,
+        ScheduleType::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun completionDao(): CompletionDao
     abstract fun lectureDao(): LectureDao
     abstract fun studySessionDao(): StudySessionDao
+    abstract fun scheduleTypeDao(): ScheduleTypeDao
 
     companion object {
         @Volatile
@@ -68,6 +71,9 @@ abstract class AppDatabase : RoomDatabase() {
                 }
                 if (db.lectureDao().getTrackerCount() == 0) {
                     db.lectureDao().insertAll(DefaultScheduleProvider.getDefaultTrackers())
+                }
+                if (db.scheduleTypeDao().getScheduleTypeCount() == 0) {
+                    db.scheduleTypeDao().insertAll(DefaultScheduleProvider.getDefaultScheduleTypes())
                 }
             }
         }

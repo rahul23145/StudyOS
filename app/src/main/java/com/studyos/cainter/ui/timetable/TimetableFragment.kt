@@ -79,6 +79,14 @@ class TimetableFragment : Fragment() {
     }
 
     private fun setupButtons() {
+        binding.btnScheduleType.setOnClickListener {
+            val app = requireActivity().application as StudyOSApplication
+            val dialog = ScheduleTypeDialog(app.scheduleRepository) { selectedType ->
+                binding.tvDayOverviewBadge.text = "${selectedType.name} • Target ${selectedType.targetDailyHours}h/day • Wake ${selectedType.wakeTime} • Sleep ${selectedType.sleepTime}"
+            }
+            dialog.show(parentFragmentManager, "ScheduleTypeDialog")
+        }
+
         binding.fabAddActivity.setOnClickListener {
             showEditDialog(null)
         }

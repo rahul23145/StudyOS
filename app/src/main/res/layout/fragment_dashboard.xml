@@ -189,6 +189,28 @@
                             android:textSize="11sp" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <!-- 7-Day Consistency Bar Graph -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@color/divider_light" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weekly Study Consistency Graph"
+                    android:textColor="@color/primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <com.studyos.cainter.ui.common.StudyBarChartView
+                    android:id="@+id/dashboardChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

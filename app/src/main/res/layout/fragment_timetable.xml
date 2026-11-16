@@ -33,6 +33,19 @@
                 tools:text="Monday Timetable" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnScheduleType"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profiles"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:layout_marginEnd="6dp"
+                app:icon="@drawable/ic_edit"
+                app:iconTint="@color/primary"
+                app:iconSize="14dp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetDefaults"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"

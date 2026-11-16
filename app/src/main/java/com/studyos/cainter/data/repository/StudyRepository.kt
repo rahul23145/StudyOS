@@ -4,9 +4,13 @@ import com.studyos.cainter.data.local.LectureDao
 import com.studyos.cainter.data.local.StudySessionDao
 import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.StudySession
+import com.studyos.cainter.ui.common.DayStudyData
 import kotlinx.coroutines.flow.Flow
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.TextStyle
+import java.util.Locale
 
 class StudyRepository(
     private val lectureDao: LectureDao,
@@ -61,5 +65,32 @@ class StudyRepository(
             .toInstant()
             .toEpochMilli()
         return sessionDao.getTotalMinutesSince(startOfWeek)
+    }
+
+    suspend fun getWeeklyChartData(targetHoursPerDay: Float = 8.0f): List<DayStudyData> {
+        val today = LocalDate.now()
+        val zone = ZoneId.systemDefault()
+
+        // Days from 6 days ago up to today (7 days window)
+        val result = mutableListOf<DayStudyData>()
+        for (i in 6 downTo 0) {
+            val date = today.minusDays(i.toLong())
+            val startOfDay = date.atStartOfDay(zone).toInstant().toEpochMilli()
+            val endOfDay = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+
+            val minutes = sessionDao.getMinutesBetween(startOfDay, endOfDay)
+            val hours = minutes / 60.0f
+
+            val dayLabel = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+            result.add(
+                DayStudyData(
+                    dayLabel = dayLabel,
+                    hours = hours,
+                    targetHours = targetHoursPerDay,
+                    isToday = (date == today)
+                )
+            )
+        }
+        return result
     }
 }

@@ -1,0 +1,89 @@
+package com.studyos.cainter.ui.timetable
+
+import android.app.Dialog
+import android.os.Bundle
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.studyos.cainter.data.local.entity.ScheduleType
+import com.studyos.cainter.data.repository.ScheduleRepository
+import com.studyos.cainter.databinding.DialogAddScheduleTypeBinding
+import com.studyos.cainter.databinding.DialogScheduleTypesBinding
+import kotlinx.coroutines.launch
+
+class ScheduleTypeDialog(
+    private val repository: ScheduleRepository,
+    private val onTypeSelected: (ScheduleType) -> Unit
+) : DialogFragment() {
+
+    private var _binding: DialogScheduleTypesBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = DialogScheduleTypesBinding.inflate(layoutInflater)
+
+        val adapter = ScheduleTypeAdapter { selectedType ->
+            lifecycleScope.launch {
+                repository.setActiveScheduleType(selectedType.id)
+                onTypeSelected(selectedType)
+                dismiss()
+            }
+        }
+
+        binding.rvScheduleTypes.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvScheduleTypes.adapter = adapter
+
+        lifecycleScope.launch {
+            repository.getAllScheduleTypes().collect { types ->
+                adapter.submitList(types)
+            }
+        }
+
+        binding.btnCreateNewType.setOnClickListener {
+            showCreateNewTypeDialog()
+        }
+
+        return MaterialAlertDialogBuilder(requireContext())
+            .setView(binding.root)
+            .setNegativeButton("Close", null)
+            .create()
+    }
+
+    private fun showCreateNewTypeDialog() {
+        val addBinding = DialogAddScheduleTypeBinding.inflate(layoutInflater)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setView(addBinding.root)
+            .setPositiveButton("Save Profile") { _, _ ->
+                val name = addBinding.etProfileName.text.toString().trim()
+                if (name.isBlank()) return@setPositiveButton
+
+                val desc = addBinding.etProfileDesc.text.toString().trim()
+                val targetHours = addBinding.etTargetHours.text.toString().toFloatOrNull() ?: 8.0f
+                val wakeTime = addBinding.etWakeTime.text.toString().trim().ifBlank { "06:30" }
+                val sleepTime = addBinding.etSleepTime.text.toString().trim().ifBlank { "23:00" }
+
+                lifecycleScope.launch {
+                    val newType = ScheduleType(
+                        name = name,
+                        description = if (desc.isNotBlank()) desc else "Custom Schedule Type",
+                        targetDailyHours = targetHours,
+                        wakeTime = wakeTime,
+                        sleepTime = sleepTime,
+                        isActive = true
+                    )
+                    val id = repository.createScheduleType(newType)
+                    repository.setActiveScheduleType(id)
+                    dismiss()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

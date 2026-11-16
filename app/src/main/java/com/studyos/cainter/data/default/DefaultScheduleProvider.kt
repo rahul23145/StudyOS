@@ -683,4 +683,50 @@ object DefaultScheduleProvider {
             )
         )
     }
+
+    fun getDefaultScheduleTypes(): List<com.studyos.cainter.data.local.entity.ScheduleType> {
+        return listOf(
+            com.studyos.cainter.data.local.entity.ScheduleType(
+                name = "CA Intermediate (ICAI)",
+                description = "2x Costing (2h18m) + 2x Audit (1h30m) + MWF Tuition (6-7 PM) + TTSS Running + Gym",
+                targetDailyHours = 8.5f,
+                wakeTime = "07:00",
+                sleepTime = "23:30",
+                isActive = true
+            ),
+            com.studyos.cainter.data.local.entity.ScheduleType(
+                name = "Competitive Exam Prep",
+                description = "UPSC / GATE / CAT - 3 Study Blocks (Morning, Afternoon, Evening) + Exercise",
+                targetDailyHours = 8.0f,
+                wakeTime = "06:00",
+                sleepTime = "23:00",
+                isActive = false
+            ),
+            com.studyos.cainter.data.local.entity.ScheduleType(
+                name = "Working Professional & Upskilling",
+                description = "9-to-6 Work hours + Early morning deep work (2h) + Night learning (2.5h)",
+                targetDailyHours = 4.5f,
+                wakeTime = "06:00",
+                sleepTime = "23:30",
+                isActive = false
+            ),
+            com.studyos.cainter.data.local.entity.ScheduleType(
+                name = "College / University Student",
+                description = "College classes 9 AM - 4 PM + Sports/Gym + Evening study & assignments",
+                targetDailyHours = 4.0f,
+                wakeTime = "07:00",
+                sleepTime = "23:30",
+                isActive = false
+            ),
+            com.studyos.cainter.data.local.entity.ScheduleType(
+                name = "Custom Personal Schedule",
+                description = "100% custom schedule - define your own activities, hours, and goals",
+                targetDailyHours = 6.0f,
+                wakeTime = "07:00",
+                sleepTime = "23:00",
+                isActive = false
+            )
+        )
+    }
+    }
 }

@@ -1,122 +1,72 @@
 # StudyOS 📚⚡
-### Dedicated Offline Android Operating System for CA Intermediate Preparation
-*Engineered for ICAI CA Inter Aspirants (New Scheme)*
+### Dedicated Offline Android Applications for CA Intermediate & Custom Routine Building
+*100% Offline • Native Kotlin • Room SQLite • Interactive 7-Day Study Graphs*
 
-[![Build StudyOS Debug APK](https://github.com/rahul23145/StudyOS/actions/workflows/build.yml/badge.svg)](https://github.com/rahul23145/StudyOS/actions/workflows/build.yml)
-
----
-
-## 🌟 Overview
-
-**StudyOS** is a native Android application built in Kotlin, tailored specifically for CA Intermediate preparation under the ICAI New Scheme. It is designed to be **100% offline**—it requires **no internet permissions, no cloud accounts, no login gates, and no Android Studio** for the end user.
-
-All data is stored directly on your device in a high-performance local **Room SQLite Database**.
+[![Build Both StudyOS APKs](https://github.com/rahul23145/StudyOS/actions/workflows/build.yml/badge.svg)](https://github.com/rahul23145/StudyOS/actions/workflows/build.yml)
 
 ---
 
-## 🎯 Pre-Configured Daily Routine & Architecture
+## 🌟 Two Separate Applications
 
-StudyOS embeds the student's high-yield daily routine out-of-the-box, while keeping **every activity 100% editable**:
+This repository builds and publishes **two distinct, standalone Android applications**. Both can be installed side-by-side on the same phone with zero conflict:
 
-| Time Slot | Duration | Activity | Category & Description |
-|---|---|---|---|
-| **07:00 – 07:15 AM** | 15 min | **Wake Up & Hydrate** | Fixed wake time (7:00 AM) for circadian alignment |
-| **07:15 – 08:15 AM** | 60 min | **Morning Gym** | 1 hour strength & endurance training |
-| **08:15 – 08:40 AM** | 25 min | **Freshen Up & Breakfast** | High-protein nutrition at home |
-| **08:40 – 09:00 AM** | 20 min | **Travel: Home ➔ Study Room** | 20-minute transition to distraction-free study environment |
-| **09:00 – 11:18 AM** | **138 min (2h 18m)** | **Costing Lecture 1** | Paper 4: Cost & Management Accounting (Daily Session 1) |
-| **11:18 – 11:30 AM** | 12 min | **Break** | Eye rest, hydration, light stretch |
-| **11:30 – 01:48 PM** | **138 min (2h 18m)** | **Costing Lecture 2** | Paper 4: Cost & Management Accounting (Daily Session 2) |
-| **01:48 – 02:08 PM** | 20 min | **Travel: Study Room ➔ Home** | 20-minute travel home for lunch |
-| **02:08 – 02:40 PM** | 32 min | **Lunch at Home & Rest** | Home-cooked meal & digestive relaxation |
-| **02:40 – 03:00 PM** | 20 min | **Travel: Home ➔ Study Room** | 20-minute transition back to study room |
-| **03:00 – 04:30 PM** | **90 min (1h 30m)** | **Audit Lecture 1** | Paper 5: Auditing & Ethics Standards |
-| **04:30 – 04:45 PM** | 15 min | **Tea Break & Active Recall** | 15-minute break with concept memory review |
-| **04:45 – 06:15 PM** | **90 min / Varied** | **Audit Lecture 2 / Shift** | Mon–Sat: Audit Lecture 2 (adjusted on MWF for tuition) |
-| **06:00 – 07:00 PM** | 60 min | **Tuition Class (MWF)** | Monday, Wednesday, Friday evening tuition |
-| **06:30 – 07:15 PM** | 45 min | **TTSS Running** | Tuesday, Thursday, Saturday, Sunday cardio & mental recharge |
-| **08:20 – 10:20 PM** | **120 min (2 hours)** | **2-Hour Study Block** | Deep work: Costing practical problem solving & Audit question bank |
-| **10:20 – 10:30 PM** | 10 min | **Short Break** | 10-minute mental break |
-| **10:30 – 11:30 PM** | 60 min | **Revision & Tomorrow Planning**| Active recall of daily formulas and audit standards |
-| **11:30 PM – 07:00 AM**| **7.5 hours** | **Sleep** | Strict sleep time (11:30 PM) for memory consolidation |
+### 1️⃣ **App 1: StudyOS - CA Inter** (`com.studyos.cainter`)
+- Dedicated for **Rahul's CA Intermediate preparation** (ICAI New Scheme).
+- Pre-loaded with the exact CA Inter daily schedule:
+  - **Wake 7:00 AM • Sleep 11:30 PM** (7.5h restorative sleep)
+  - **Morning Gym**: 1 hour (07:15 – 08:15 AM)
+  - **20-min Travel**: Home $\leftrightarrow$ Study Room transitions
+  - **2x Costing Lectures daily**: 2h 18m each (138 mins)
+  - **Lunch at Home & digestive rest**
+  - **2x Audit Lectures daily Mon–Sat**: 1h 30m each (90 mins)
+  - **MWF Tuition**: 6:00 – 7:00 PM (Monday, Wednesday, Friday)
+  - **TTSS Running**: Tuesday, Thursday, Saturday, Sunday
+  - **Sunday Audit-Only Protocol**: Zero Costing; 3x 2-hour deep study blocks for Standards on Auditing (SA 200/500), Company Audit & CARO
+  - **2-Hour Study Blocks**: With 15-minute breaks
+  - **7-Day Study Hours Graph**: Visual bar chart with daily target threshold line!
 
-### ☀️ Sunday Audit-Only Mode
-On Sundays, **zero Costing lectures** are scheduled. The entire day is optimized for:
-1. **Audit SA 200/500 Series Deep Dive** (2-hour study block)
-2. **Company Audit (Sec 139–148) & CARO 2020** (2-hour study block)
-3. **Audit Lecture Sessions 1 & 2** (1h 30m each)
-4. **TTSS Running & Active Recovery**
-5. **Weekly Audit Mastery Mock Test** (2-hour study block)
+### 2️⃣ **App 2: StudyOS - Custom Routine** (`com.studyos.custom`)
+- Dedicated for **any other person, friend, or aspirant** who wants to design their own routine!
+- **Schedule Profile System**:
+  - 🎓 **Competitive Exam Prep** (UPSC / GATE / CAT / NEET)
+  - 💼 **Working Professional & Upskilling** (Work hours + early morning / night study)
+  - 🏫 **College / University Student** (Classes + sports + evening study)
+  - ⚡ **Personal Custom Schedule** (Build any 24h routine from scratch!)
+  - Create and switch between multiple custom schedule profiles!
+  - Add custom subjects, lecture targets, and duration presets.
+- **7-Day Study Hours Graph**: Visual bar chart tracking their personalized daily goals!
 
 ---
 
-## 📱 Features
+## 📊 Interactive 7-Day Study Hours Graph (In Both Apps)
 
-1. **Daily Progress Dashboard**:
-   - Visual progress bar showing % of today's tasks completed.
-   - Dynamic **"Current Focus"** & **"Up Next"** cards calculating your active session in real-time.
-   - Quick check-off list for today's activities.
-   - Lecture counters for Costing and Audit.
-   - Consecutive day streak counter.
-
-2. **Editable Weekly Timetable**:
-   - Full Monday to Sunday schedule browser.
-   - **Edit any activity**: Change title, start time, end time, category, day, and notes.
-   - **Add custom activities**: One-tap Floating Action Button.
-   - **Delete activities**: With safety confirmation.
-   - **Reset to Recommended CA Inter Routine**: Easily restore defaults anytime.
-
-3. **Costing & Audit Lecture Tracker**:
-   - Track total lectures watched vs total syllabus (default 85 Costing, 65 Audit).
-   - Plus (+) and Minus (-) buttons to increment lectures on the fly.
-   - Calculates total hours watched automatically.
-
-4. **Dedicated Study Timers**:
-   - Preset: **2-Hour Study Block** (120 min)
-   - Preset: **Costing Lecture** (2h 18m = 138 min)
-   - Preset: **Audit Lecture** (1h 30m = 90 min)
-   - Preset: **15-Minute Break** (15 min)
-   - Preset: **Tuition** (60 min)
-   - Audio chime & haptic vibration alerts when timer completes.
-   - One-tap button to save completed session into the study database.
-
-5. **Analytics & Adherence**:
-   - Total study hours logged today and past 7 days.
-   - Routine Integrity Checklist (Gym, Running, Tuition, Meals, Sleep).
-   - Chronological study history log.
+Both apps feature a **native 2D Canvas Study Bar Chart** built right into the Dashboard and Analytics screens:
+- **X-Axis**: 7-day rolling window (`Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`).
+- **Y-Axis**: Proportional hour bars showing exact daily study time (e.g. `8.5h`, `6.2h`).
+- **Target Line**: Dashed guideline at daily target (e.g. 8.0h/day).
+- **Dynamic Styling**:
+  - 🟢 **Emerald Green**: Daily target achieved.
+  - 🔵 **Sapphire Blue / Sky Blue**: In-progress study sessions.
+  - 🌟 **Vibrant Accent**: Highlights today's active bar.
+- **100% Offline**: Renders instantly on-device with zero internet or external charting libraries.
 
 ---
 
-## 🚀 How to Download & Install the APK (No Android Studio Required!)
+## 📲 Direct APK Downloads (Raw `.apk`, No Unzipping)
 
-You do **not** need Android Studio or a developer environment to use StudyOS.
+Both apps are compiled and released directly via GitHub Actions:
 
-### Download from GitHub Actions:
-1. Open this repository on GitHub: [`https://github.com/rahul23145/StudyOS`](https://github.com/rahul23145/StudyOS).
-2. Click on the **Actions** tab at the top.
-3. Select the latest workflow run: **"Build StudyOS Debug APK"**.
-4. Scroll down to the **Artifacts** section at the bottom of the page.
-5. Download **`StudyOS-CAInter-Debug-APK.zip`**.
-6. Unzip the file on your computer or phone to obtain `app-debug.apk`.
-7. Transfer or open the `.apk` file on your Android phone and tap **Install**.
-8. Enjoy distraction-free, 100% offline study tracking!
+| Application | Direct Download Link | Description |
+|:---|:---|:---|
+| **StudyOS - CA Inter** | 👉 **[Download StudyOS-CAInter.apk](https://github.com/rahul23145/StudyOS/releases/download/v1.1.0/StudyOS-CAInter.apk)** | Rahul's CA Inter prep app with 7-Day Graph |
+| **StudyOS - Custom** | 👉 **[Download StudyOS-Custom.apk](https://github.com/rahul23145/StudyOS/releases/download/v1.1.0/StudyOS-Custom.apk)** | Customizable schedule app for other people |
+
+*Direct raw repository mirrors are also available inside [`/release/`](file:///P:/Ca%20Inter/StudyOS/release/).*
 
 ---
 
-## 🛠️ Architecture & Tech Stack
-
-- **Language**: Kotlin 1.9.23
-- **Minimum SDK**: Android 7.0 (API 24)
-- **Target SDK**: Android 14 (API 34)
-- **Architecture**: MVVM (Model-View-ViewModel) + Repository Pattern
-- **Local Storage**: Android Jetpack Room (SQLite underneath) with Kotlin Flow & Coroutines
-- **UI & Layouts**: Google Material 3 Design Components, ViewBinding
-- **CI/CD**: GitHub Actions (`.github/workflows/build.yml`) on Ubuntu Runner with Java 17 and Gradle 8.7
-
----
-
-## 🔒 100% Offline & Privacy Guarantee
-
-- **Zero Network Permissions**: The app does not request `android.permission.INTERNET`.
-- **Zero Cloud Accounts**: No email, no passwords, no remote databases.
-- **Zero Tracking**: Your study habits and notes remain entirely on your physical phone storage.
+## 🚀 How to Install on Android
+1. Click the download link above on your phone.
+2. Tap the downloaded `.apk` file to install.
+3. Both apps have different package IDs and app names, so you can keep both installed on the same phone!
+4. Zero sign-up, zero internet required.

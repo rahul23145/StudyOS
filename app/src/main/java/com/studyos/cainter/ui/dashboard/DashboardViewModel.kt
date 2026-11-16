@@ -7,6 +7,7 @@ import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
+import com.studyos.cainter.ui.common.DayStudyData
 import com.studyos.cainter.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,8 @@ data class DashboardUiState(
     val nextItem: ScheduleItem? = null,
     val costingTracker: LectureTracker? = null,
     val auditTracker: LectureTracker? = null,
-    val studyMinutesToday: Int = 0
+    val studyMinutesToday: Int = 0,
+    val chartData: List<DayStudyData> = emptyList()
 )
 
 class DashboardViewModel(
@@ -79,6 +81,8 @@ class DashboardViewModel(
                 val costing = trackers.firstOrNull { it.subject == "COSTING" }
                 val audit = trackers.firstOrNull { it.subject == "AUDIT" }
 
+                val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = 8.0f)
+
                 DashboardUiState(
                     dateDisplay = DateUtils.getFormattedDisplayDate(),
                     routineLabel = routineLabel,
@@ -91,7 +95,8 @@ class DashboardViewModel(
                     nextItem = next,
                     costingTracker = costing,
                     auditTracker = audit,
-                    studyMinutesToday = minutesToday
+                    studyMinutesToday = minutesToday,
+                    chartData = chart
                 )
             }.collect { state ->
                 _uiState.value = state

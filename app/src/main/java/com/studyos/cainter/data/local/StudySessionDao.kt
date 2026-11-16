@@ -20,4 +20,7 @@ interface StudySessionDao {
 
     @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions WHERE timestamp >= :sinceTimestamp")
     fun getTotalMinutesSince(sinceTimestamp: Long): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions WHERE timestamp >= :fromTimestamp AND timestamp < :toTimestamp")
+    suspend fun getMinutesBetween(fromTimestamp: Long, toTimestamp: Long): Int
 }
