@@ -728,5 +728,4 @@ object DefaultScheduleProvider {
             )
         )
     }
-    }
 }

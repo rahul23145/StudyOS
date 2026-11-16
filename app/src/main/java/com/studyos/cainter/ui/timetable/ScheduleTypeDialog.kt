@@ -6,27 +6,37 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.studyos.cainter.StudyOSApplication
 import com.studyos.cainter.data.local.entity.ScheduleType
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.databinding.DialogAddScheduleTypeBinding
 import com.studyos.cainter.databinding.DialogScheduleTypesBinding
 import kotlinx.coroutines.launch
 
-class ScheduleTypeDialog(
-    private val repository: ScheduleRepository,
-    private val onTypeSelected: (ScheduleType) -> Unit
-) : DialogFragment() {
+class ScheduleTypeDialog : DialogFragment() {
 
     private var _binding: DialogScheduleTypesBinding? = null
     private val binding get() = _binding!!
 
+    private var onTypeSelected: ((ScheduleType) -> Unit)? = null
+
+    companion object {
+        fun newInstance(onSelected: (ScheduleType) -> Unit): ScheduleTypeDialog {
+            val dialog = ScheduleTypeDialog()
+            dialog.onTypeSelected = onSelected
+            return dialog
+        }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogScheduleTypesBinding.inflate(layoutInflater)
+        val app = requireActivity().application as StudyOSApplication
+        val repository = app.scheduleRepository
 
         val adapter = ScheduleTypeAdapter { selectedType ->
             lifecycleScope.launch {
                 repository.setActiveScheduleType(selectedType.id)
-                onTypeSelected(selectedType)
+                onTypeSelected?.invoke(selectedType)
                 dismiss()
             }
         }
@@ -41,7 +51,7 @@ class ScheduleTypeDialog(
         }
 
         binding.btnCreateNewType.setOnClickListener {
-            showCreateNewTypeDialog()
+            showCreateNewTypeDialog(repository)
         }
 
         return MaterialAlertDialogBuilder(requireContext())
@@ -50,7 +60,7 @@ class ScheduleTypeDialog(
             .create()
     }
 
-    private fun showCreateNewTypeDialog() {
+    private fun showCreateNewTypeDialog(repository: ScheduleRepository) {
         val addBinding = DialogAddScheduleTypeBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext())
@@ -75,6 +85,7 @@ class ScheduleTypeDialog(
                     )
                     val id = repository.createScheduleType(newType)
                     repository.setActiveScheduleType(id)
+                    onTypeSelected?.invoke(newType)
                     dismiss()
                 }
             }
