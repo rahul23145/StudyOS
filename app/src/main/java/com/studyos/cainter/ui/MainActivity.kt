@@ -114,6 +114,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
+        try {
+            binding.bottomNavigation.isItemActiveIndicatorEnabled = false
+        } catch (_: Exception) {}
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> {
