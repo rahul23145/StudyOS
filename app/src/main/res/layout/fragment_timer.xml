@@ -121,7 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="24dp"
-            app:cardElevation="3dp"
+            app:cardElevation="2dp"
             app:strokeWidth="1dp"
             app:strokeColor="@color/divider_light"
             app:cardBackgroundColor="@color/surface_card_light">
@@ -131,95 +131,130 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="28dp">
+                android:paddingTop="28dp"
+                android:paddingBottom="24dp"
+                android:paddingHorizontal="20dp">
 
-                <!-- Progress Ring / Indicator -->
-                <com.google.android.material.progressindicator.CircularProgressIndicator
-                    android:id="@+id/circularTimerProgress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:indicatorSize="220dp"
-                    app:trackThickness="14dp"
-                    app:trackCornerRadius="7dp"
-                    app:trackColor="@color/divider_light"
-                    app:indicatorColor="@color/primary"
-                    tools:progress="75" />
+                <!-- Progress Ring with Centered Digits & Status inside FrameLayout -->
+                <FrameLayout
+                    android:layout_width="220dp"
+                    android:layout_height="220dp"
+                    android:layout_gravity="center">
 
-                <TextView
-                    android:id="@+id/tvTimerDigits"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="-140dp"
-                    android:textColor="@color/text_primary_light"
-                    android:textSize="44sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textStyle="bold"
-                    tools:text="02:00:00" />
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/circularTimerProgress"
+                        android:layout_width="220dp"
+                        android:layout_height="220dp"
+                        android:layout_gravity="center"
+                        app:indicatorSize="220dp"
+                        app:trackThickness="12dp"
+                        app:trackCornerRadius="6dp"
+                        app:trackColor="@color/divider_light"
+                        app:indicatorColor="@color/primary"
+                        tools:progress="75" />
 
-                <TextView
-                    android:id="@+id/tvTimerStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:textColor="@color/accent_emerald"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    tools:text="READY TO FOCUS" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
-                <!-- Quick Flexible Time Adjustment Controls -->
+                        <TextView
+                            android:id="@+id/tvTimerDigits"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary_light"
+                            android:textSize="40sp"
+                            android:fontFamily="sans-serif-medium"
+                            android:textStyle="bold"
+                            tools:text="02:00:00" />
+
+                        <TextView
+                            android:id="@+id/tvTimerStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/accent_emerald"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            tools:text="READY TO FOCUS" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- Quick Flexible Time Adjustment Controls (Cleanly below the circle) -->
                 <LinearLayout
                     android:id="@+id/layoutQuickAdjust"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginTop="22dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAdjustMinus15"
                         style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="4dp"
                         android:text="-15m"
-                        android:textSize="11sp"
-                        android:paddingHorizontal="8dp"
-                        android:layout_marginEnd="4dp" />
+                        android:textColor="@color/text_secondary_light"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="6dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAdjustMinus5"
                         style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="4dp"
                         android:text="-5m"
-                        android:textSize="11sp"
-                        android:paddingHorizontal="8dp"
-                        android:layout_marginEnd="8dp" />
+                        android:textColor="@color/text_secondary_light"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="6dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAdjustPlus5"
                         style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="4dp"
                         android:text="+5m"
-                        android:textSize="11sp"
-                        android:paddingHorizontal="8dp"
-                        android:layout_marginEnd="4dp" />
+                        android:textColor="@color/secondary"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="6dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAdjustPlus15"
                         style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="4dp"
                         android:text="+15m"
-                        android:textSize="11sp"
-                        android:paddingHorizontal="8dp" />
+                        android:textColor="@color/secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Control Buttons -->
+        <!-- Control Buttons (Weight-Proportioned to avoid edge clipping) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -230,40 +265,66 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPreviousTask"
                 style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
+                android:layout_width="0dp"
+                android:layout_height="54dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="4dp"
                 android:text="Prev"
+                android:textSize="13sp"
                 android:visibility="gone"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetTimer"
                 style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
+                android:layout_width="0dp"
+                android:layout_height="54dp"
+                android:layout_weight="1.1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="6dp"
                 android:text="Reset"
-                android:layout_marginEnd="12dp"
-                app:icon="@drawable/ic_reset" />
+                android:textSize="13sp"
+                android:layout_marginEnd="8dp"
+                app:icon="@drawable/ic_reset"
+                app:iconSize="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStartPauseTimer"
                 style="@style/Widget.Material3.Button"
-                android:layout_width="160dp"
-                android:layout_height="56dp"
+                android:layout_width="0dp"
+                android:layout_height="54dp"
+                android:layout_weight="1.6"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Start"
-                android:textSize="16sp"
+                android:textSize="15sp"
+                android:textStyle="bold"
                 app:icon="@drawable/ic_play"
+                app:iconSize="18dp"
                 app:backgroundTint="@color/primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSkipTask"
                 style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
+                android:layout_width="0dp"
+                android:layout_height="54dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="4dp"
                 android:text="Skip"
+                android:textSize="13sp"
                 android:visibility="gone"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
                 tools:visibility="visible" />
         </LinearLayout>
 
