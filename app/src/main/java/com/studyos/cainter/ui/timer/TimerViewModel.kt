@@ -5,12 +5,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
 import com.studyos.cainter.util.DateUtils
 import com.studyos.cainter.util.FocusGuardService
 import com.studyos.cainter.util.SoundVibrationHelper
 import com.studyos.cainter.util.ZeroDistractionGuard
+import java.time.LocalTime
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,7 +33,9 @@ data class TimerUiState(
     val remainingSeconds: Long = 120 * 60L,
     val formattedTime: String = "02:00:00",
     val progressPercent: Int = 100,
-    val state: TimerState = TimerState.IDLE
+    val state: TimerState = TimerState.IDLE,
+    val isRealTimeSynced: Boolean = false,
+    val scheduledEndTime: String = ""
 )
 
 data class SequenceTask(
@@ -40,7 +44,9 @@ data class SequenceTask(
     val durationMinutes: Int,
     val category: String = "STUDY_BLOCK",
     val isCompleted: Boolean = false,
-    val scheduleItemId: Long? = null
+    val scheduleItemId: Long? = null,
+    val startTime: String = "",
+    val endTime: String = ""
 )
 
 class TimerViewModel(
@@ -55,8 +61,8 @@ class TimerViewModel(
     private val _timerFinishedEvent = MutableSharedFlow<String>()
     val timerFinishedEvent: SharedFlow<String> = _timerFinishedEvent.asSharedFlow()
 
-    // Sequential Task Flow Mode State
-    private val _isSequenceMode = MutableStateFlow(false)
+    // Sequential Task Flow Mode State (Follow Timetable by default)
+    private val _isSequenceMode = MutableStateFlow(true)
     val isSequenceMode: StateFlow<Boolean> = _isSequenceMode.asStateFlow()
 
     private val _sequenceQueue = MutableStateFlow<List<SequenceTask>>(emptyList())
@@ -69,6 +75,7 @@ class TimerViewModel(
     val isAutoAdvanceEnabled: StateFlow<Boolean> = _isAutoAdvanceEnabled.asStateFlow()
 
     private var timerJob: Job? = null
+    private var realTimeSyncJob: Job? = null
 
     init {
         loadTodayScheduleAsSequence()
@@ -77,12 +84,20 @@ class TimerViewModel(
     fun setSequenceMode(enabled: Boolean) {
         _isSequenceMode.value = enabled
         if (enabled && _sequenceQueue.value.isNotEmpty()) {
-            selectSequenceTask(_currentSequenceIndex.value.coerceIn(0, _sequenceQueue.value.size - 1))
+            syncToRealTimeIfIdle()
+        } else {
+            realTimeSyncJob?.cancel()
         }
     }
 
     fun toggleAutoAdvance(enabled: Boolean) {
         _isAutoAdvanceEnabled.value = enabled
+    }
+
+    fun syncToRealTimeIfIdle() {
+        if (_uiState.value.state == TimerState.IDLE && _isSequenceMode.value) {
+            loadTodayScheduleAsSequence()
+        }
     }
 
     fun loadTodayScheduleAsSequence() {
@@ -92,31 +107,140 @@ class TimerViewModel(
             val typeId = activeType?.id ?: 1L
             val items = scheduleRepository.getScheduleForDaySync(todayDay, typeId)
 
-            val tasks = if (items.isNotEmpty()) {
-                items.map { item ->
+            if (items.isNotEmpty()) {
+                // Find slot that corresponds to real-world time right now
+                var activeIdx = items.indexOfFirst { DateUtils.isCurrentTimeBetween(it.startTime, it.endTime) }
+                if (activeIdx == -1) {
+                    activeIdx = items.indexOfFirst { DateUtils.isUpcoming(it.startTime) }
+                }
+                if (activeIdx == -1) {
+                    activeIdx = (items.size - 1).coerceAtLeast(0)
+                }
+
+                val tasks = items.mapIndexed { idx, item ->
                     SequenceTask(
                         id = item.id,
                         title = item.title,
                         durationMinutes = item.durationMinutes.coerceAtLeast(1),
                         category = item.category,
-                        isCompleted = false,
-                        scheduleItemId = item.id
+                        isCompleted = idx < activeIdx,
+                        scheduleItemId = item.id,
+                        startTime = item.startTime,
+                        endTime = item.endTime
                     )
                 }
+
+                _sequenceQueue.value = tasks
+                _currentSequenceIndex.value = activeIdx
+                _isSequenceMode.value = true
+
+                applyScheduleItemToTimer(items[activeIdx], isRealTimeSync = true)
             } else {
-                listOf(
+                val fallbackTasks = listOf(
                     SequenceTask(title = "Morning Deep Focus Block", durationMinutes = 120),
                     SequenceTask(title = "Rest & Stretch Break", durationMinutes = 15, category = "BREAK"),
                     SequenceTask(title = "Afternoon Study Block", durationMinutes = 120),
                     SequenceTask(title = "Lunch & Relaxation", durationMinutes = 45, category = "BREAK"),
                     SequenceTask(title = "Evening Revision & Practice", durationMinutes = 90)
                 )
-            }
-
-            _sequenceQueue.value = tasks
-            _currentSequenceIndex.value = 0
-            if (_isSequenceMode.value && tasks.isNotEmpty()) {
+                _sequenceQueue.value = fallbackTasks
+                _currentSequenceIndex.value = 0
                 selectSequenceTask(0)
+            }
+        }
+    }
+
+    private fun applyScheduleItemToTimer(item: ScheduleItem, isRealTimeSync: Boolean) {
+        timerJob?.cancel()
+        realTimeSyncJob?.cancel()
+
+        val totalSec = item.durationMinutes * 60L
+        var remainingSec = totalSec
+
+        if (isRealTimeSync && DateUtils.isCurrentTimeBetween(item.startTime, item.endTime)) {
+            val rem = DateUtils.getRemainingSecondsUntil(item.endTime)
+            if (rem > 0) {
+                remainingSec = rem.coerceAtMost(totalSec)
+            }
+        }
+
+        val progress = if (totalSec > 0) ((remainingSec * 100) / totalSec).toInt().coerceIn(0, 100) else 100
+        val formatted = formatSeconds(remainingSec)
+
+        _uiState.value = TimerUiState(
+            presetTitle = item.title,
+            totalSeconds = totalSec,
+            remainingSeconds = remainingSec,
+            formattedTime = formatted,
+            progressPercent = progress,
+            state = TimerState.IDLE,
+            isRealTimeSynced = isRealTimeSync,
+            scheduledEndTime = item.endTime
+        )
+
+        if (isRealTimeSync) {
+            startRealTimeSyncTicker(item)
+        }
+    }
+
+    private fun startRealTimeSyncTicker(item: ScheduleItem) {
+        realTimeSyncJob?.cancel()
+        realTimeSyncJob = viewModelScope.launch {
+            while (_uiState.value.state == TimerState.IDLE && _isSequenceMode.value) {
+                delay(1000L)
+                if (_uiState.value.state != TimerState.IDLE) break
+
+                if (DateUtils.isCurrentTimeBetween(item.startTime, item.endTime)) {
+                    val rem = DateUtils.getRemainingSecondsUntil(item.endTime)
+                    val total = item.durationMinutes * 60L
+                    val progress = if (total > 0) ((rem * 100) / total).toInt().coerceIn(0, 100) else 0
+                    val formatted = formatSeconds(rem)
+
+                    _uiState.value = _uiState.value.copy(
+                        remainingSeconds = rem,
+                        formattedTime = formatted,
+                        progressPercent = progress,
+                        isRealTimeSynced = true
+                    )
+
+                    if (rem <= 0) {
+                        advanceToNextScheduleSlot()
+                        break
+                    }
+                } else if (DateUtils.isUpcoming(item.startTime)) {
+                    val total = item.durationMinutes * 60L
+                    _uiState.value = _uiState.value.copy(
+                        remainingSeconds = total,
+                        formattedTime = formatSeconds(total),
+                        progressPercent = 100,
+                        isRealTimeSynced = true
+                    )
+                } else {
+                    advanceToNextScheduleSlot()
+                    break
+                }
+            }
+        }
+    }
+
+    private fun advanceToNextScheduleSlot() {
+        val nextIdx = _currentSequenceIndex.value + 1
+        if (nextIdx < _sequenceQueue.value.size) {
+            val list = _sequenceQueue.value.toMutableList()
+            list[_currentSequenceIndex.value] = list[_currentSequenceIndex.value].copy(isCompleted = true)
+            _sequenceQueue.value = list
+            _currentSequenceIndex.value = nextIdx
+            val nextTask = list[nextIdx]
+            val todayDay = DateUtils.getTodayDayOfWeek()
+            viewModelScope.launch {
+                val activeType = scheduleRepository.getActiveScheduleTypeSync()
+                val typeId = activeType?.id ?: 1L
+                val items = scheduleRepository.getScheduleForDaySync(todayDay, typeId)
+                if (nextIdx in items.indices) {
+                    applyScheduleItemToTimer(items[nextIdx], isRealTimeSync = true)
+                } else {
+                    setPreset(nextTask.title, nextTask.durationMinutes)
+                }
             }
         }
     }
@@ -153,7 +277,19 @@ class TimerViewModel(
         if (index in list.indices) {
             _currentSequenceIndex.value = index
             val task = list[index]
-            setPreset(task.title, task.durationMinutes)
+            timerJob?.cancel()
+            realTimeSyncJob?.cancel()
+            val totalSec = task.durationMinutes * 60L
+            _uiState.value = TimerUiState(
+                presetTitle = task.title,
+                totalSeconds = totalSec,
+                remainingSeconds = totalSec,
+                formattedTime = formatSeconds(totalSec),
+                progressPercent = 100,
+                state = TimerState.IDLE,
+                isRealTimeSynced = false,
+                scheduledEndTime = task.endTime
+            )
         }
     }
 
@@ -179,6 +315,7 @@ class TimerViewModel(
 
     fun setPreset(title: String, durationMinutes: Int) {
         timerJob?.cancel()
+        realTimeSyncJob?.cancel()
         val totalSec = durationMinutes * 60L
         _uiState.value = TimerUiState(
             presetTitle = title,
@@ -186,7 +323,8 @@ class TimerViewModel(
             remainingSeconds = totalSec,
             formattedTime = formatSeconds(totalSec),
             progressPercent = 100,
-            state = TimerState.IDLE
+            state = TimerState.IDLE,
+            isRealTimeSynced = false
         )
     }
 
@@ -206,18 +344,19 @@ class TimerViewModel(
             val elapsedMins = (elapsedSec / 60).toInt().coerceAtLeast(1)
 
             timerJob?.cancel()
+            realTimeSyncJob?.cancel()
 
             // 1. Log actual elapsed study time
             studyRepository.logSession(
                 subject = _uiState.value.presetTitle,
                 category = "TIMER_SESSION",
                 durationMinutes = elapsedMins,
-                notes = "Completed early in ${elapsedMins}m via Flow Timer"
+                notes = "Completed early in ${elapsedMins}m via Follow Timetable"
             )
 
             SoundVibrationHelper.playSessionCompleteAlert(getApplication())
 
-            // 2. If in sequence mode, advance and adjust timetable
+            // 2. Advance to next task following the timetable
             if (_isSequenceMode.value) {
                 val list = _sequenceQueue.value.toMutableList()
                 val currentIdx = _currentSequenceIndex.value
@@ -227,20 +366,27 @@ class TimerViewModel(
                     _sequenceQueue.value = list
 
                     val todayDate = DateUtils.getTodayDateString()
-                    val todayDay = DateUtils.getTodayDayOfWeek()
-                    val activeType = scheduleRepository.getActiveScheduleTypeSync()
-                    val typeId = activeType?.id ?: 1L
-
-                    // Mark completion in timetable
                     if (finishedTask.scheduleItemId != null) {
                         scheduleRepository.setCompletion(todayDate, finishedTask.scheduleItemId, true)
                     }
 
-                    // Auto-advance to next sequential task
+                    // Auto-advance to next sequential task in timetable
                     if ((currentIdx + 1) < list.size) {
                         val nextIdx = currentIdx + 1
-                        selectSequenceTask(nextIdx)
-                        _timerFinishedEvent.emit("Completed '${finishedTask.title}' in ${elapsedMins}m! Starting '${list[nextIdx].title}'.")
+                        _currentSequenceIndex.value = nextIdx
+                        val nextTask = list[nextIdx]
+                        val totalSec = nextTask.durationMinutes * 60L
+                        _uiState.value = TimerUiState(
+                            presetTitle = nextTask.title,
+                            totalSeconds = totalSec,
+                            remainingSeconds = totalSec,
+                            formattedTime = formatSeconds(totalSec),
+                            progressPercent = 100,
+                            state = TimerState.IDLE,
+                            isRealTimeSynced = false,
+                            scheduledEndTime = nextTask.endTime
+                        )
+                        _timerFinishedEvent.emit("Completed '${finishedTask.title}' in ${elapsedMins}m! Starting '${nextTask.title}'.")
                         startTimer()
                         return@launch
                     }
@@ -295,7 +441,8 @@ class TimerViewModel(
 
     private fun startTimer() {
         timerJob?.cancel()
-        _uiState.value = _uiState.value.copy(state = TimerState.RUNNING)
+        realTimeSyncJob?.cancel()
+        _uiState.value = _uiState.value.copy(state = TimerState.RUNNING, isRealTimeSynced = false)
 
         FocusGuardService.startService(
             getApplication(),
@@ -365,10 +512,10 @@ class TimerViewModel(
             subject = _uiState.value.presetTitle,
             category = "TIMER_SESSION",
             durationMinutes = elapsedMinutes,
-            notes = "Completed via StudyOS Flow Timer"
+            notes = "Completed via Follow Timetable"
         )
 
-        // If in sequential flow mode
+        // If in sequential timetable flow mode, advance to next timetable item
         if (_isSequenceMode.value) {
             val list = _sequenceQueue.value.toMutableList()
             val currentIdx = _currentSequenceIndex.value
@@ -383,12 +530,24 @@ class TimerViewModel(
                     scheduleRepository.setCompletion(todayDate, finishedTask.scheduleItemId, true)
                 }
 
-                // Auto-advance to next sequential task
+                // Auto-advance to next sequential timetable task
                 if (_isAutoAdvanceEnabled.value && (currentIdx + 1) < list.size) {
-                    delay(1500L) // Brief pause to celebrate completion
+                    delay(1500L) // Brief celebration chime pause
                     val nextIdx = currentIdx + 1
-                    selectSequenceTask(nextIdx)
-                    startTimer() // Automatically starts the next task!
+                    _currentSequenceIndex.value = nextIdx
+                    val nextTask = list[nextIdx]
+                    val totalSec = nextTask.durationMinutes * 60L
+                    _uiState.value = TimerUiState(
+                        presetTitle = nextTask.title,
+                        totalSeconds = totalSec,
+                        remainingSeconds = totalSec,
+                        formattedTime = formatSeconds(totalSec),
+                        progressPercent = 100,
+                        state = TimerState.IDLE,
+                        isRealTimeSynced = false,
+                        scheduledEndTime = nextTask.endTime
+                    )
+                    startTimer() // Starts the next scheduled timetable task!
                 }
             }
         }
@@ -403,15 +562,20 @@ class TimerViewModel(
 
     fun resetTimer() {
         timerJob?.cancel()
-        val total = _uiState.value.totalSeconds
-        _uiState.value = _uiState.value.copy(
-            remainingSeconds = total,
-            formattedTime = formatSeconds(total),
-            progressPercent = 100,
-            state = TimerState.IDLE
-        )
+        realTimeSyncJob?.cancel()
         FocusGuardService.stopService(getApplication())
         ZeroDistractionGuard.setSessionActive(getApplication(), false)
+        if (_isSequenceMode.value) {
+            loadTodayScheduleAsSequence()
+        } else {
+            val total = _uiState.value.totalSeconds
+            _uiState.value = _uiState.value.copy(
+                remainingSeconds = total,
+                formattedTime = formatSeconds(total),
+                progressPercent = 100,
+                state = TimerState.IDLE
+            )
+        }
     }
 
     fun logCurrentSession(notes: String = "") {
@@ -437,6 +601,7 @@ class TimerViewModel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+        realTimeSyncJob?.cancel()
         FocusGuardService.stopService(getApplication())
         ZeroDistractionGuard.setSessionActive(getApplication(), false)
     }

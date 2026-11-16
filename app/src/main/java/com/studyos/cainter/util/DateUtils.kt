@@ -10,7 +10,21 @@ object DateUtils {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
     private val displayDateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d, yyyy", Locale.getDefault())
-    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+    val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+
+    fun getRemainingSecondsUntil(timeStr: String): Long {
+        return try {
+            val now = LocalTime.now()
+            val target = LocalTime.parse(timeStr, timeFormatter)
+            if (target.isAfter(now)) {
+                java.time.temporal.ChronoUnit.SECONDS.between(now, target).coerceAtLeast(0)
+            } else {
+                0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
+    }
 
     fun getTodayDateString(): String {
         return LocalDate.now().format(dateFormatter)

@@ -58,9 +58,22 @@ class TimerFragment : Fragment() {
         observeState()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.uiState.value.state == TimerState.IDLE) {
+            viewModel.syncToRealTimeIfIdle()
+        }
+    }
+
     private fun setupModeToggle() {
-        binding.toggleTimerMode.check(R.id.btnModeSingle)
-        updateToggleButtonStyles(R.id.btnModeSingle)
+        binding.toggleTimerMode.check(R.id.btnModeSequence)
+        updateToggleButtonStyles(R.id.btnModeSequence)
+        viewModel.setSequenceMode(true)
+        binding.layoutSinglePresets.visibility = View.GONE
+        binding.layoutSequenceQueue.visibility = View.VISIBLE
+        binding.btnPreviousTask.visibility = View.VISIBLE
+        binding.btnSkipTask.visibility = View.VISIBLE
+        binding.btnLogSession.visibility = View.GONE
 
         binding.toggleTimerMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
@@ -81,6 +94,7 @@ class TimerFragment : Fragment() {
                     binding.btnPreviousTask.visibility = View.VISIBLE
                     binding.btnSkipTask.visibility = View.VISIBLE
                     binding.btnLogSession.visibility = View.GONE
+                    viewModel.syncToRealTimeIfIdle()
                 }
             }
         }
@@ -356,9 +370,13 @@ class TimerFragment : Fragment() {
 
                         when (state.state) {
                             TimerState.IDLE -> {
-                                binding.btnStartPauseTimer.text = "Start"
+                                binding.btnStartPauseTimer.text = "Start Focus"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
-                                binding.tvTimerStatus.text = "READY TO FOCUS"
+                                if (state.isRealTimeSynced && state.scheduledEndTime.isNotBlank()) {
+                                    binding.tvTimerStatus.text = "REAL TIME • Slot ends ~${state.scheduledEndTime}"
+                                } else {
+                                    binding.tvTimerStatus.text = "READY TO FOCUS"
+                                }
                                 binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.secondary))
                                 binding.btnCompleteEarly.visibility = View.GONE
                             }

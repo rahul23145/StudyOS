@@ -34,19 +34,19 @@
             app:selectionRequired="true">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnModeSingle"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Single Timer"
-                android:textSize="12sp" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnModeSequence"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sequential Flow Mode"
+                android:text="Follow Timetable"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModeSingle"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Custom / Presets"
                 android:textSize="12sp" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
