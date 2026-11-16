@@ -47,6 +47,12 @@ interface ScheduleDao {
     @Delete
     suspend fun deleteItem(item: ScheduleItem)
 
+    @Query("DELETE FROM schedule_items WHERE id = :id")
+    suspend fun deleteItemById(id: Long)
+
+    @Query("DELETE FROM schedule_items WHERE id NOT IN (SELECT MIN(id) FROM schedule_items GROUP BY scheduleTypeId, dayOfWeek, title, startTime)")
+    suspend fun removeDuplicates()
+
     @Query("DELETE FROM schedule_items")
     suspend fun clearAll()
 

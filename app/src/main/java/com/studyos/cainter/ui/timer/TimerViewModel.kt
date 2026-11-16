@@ -234,15 +234,13 @@ class TimerViewModel(
                     // Mark completion in timetable
                     if (finishedTask.scheduleItemId != null) {
                         scheduleRepository.setCompletion(todayDate, finishedTask.scheduleItemId, true)
-                        // Adjust remaining timetable blocks starting from right now!
-                        scheduleRepository.adjustRemainingScheduleFromNow(todayDay, typeId, finishedTask.scheduleItemId)
                     }
 
                     // Auto-advance to next sequential task
                     if ((currentIdx + 1) < list.size) {
                         val nextIdx = currentIdx + 1
                         selectSequenceTask(nextIdx)
-                        _timerFinishedEvent.emit("Completed '${finishedTask.title}' in ${elapsedMins}m! Starting '${list[nextIdx].title}'. Timetable auto-adjusted to current time.")
+                        _timerFinishedEvent.emit("Completed '${finishedTask.title}' in ${elapsedMins}m! Starting '${list[nextIdx].title}'.")
                         startTimer()
                         return@launch
                     }

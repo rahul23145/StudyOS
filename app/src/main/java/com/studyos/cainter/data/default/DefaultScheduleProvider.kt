@@ -731,6 +731,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Exercise / Workout",
                         category = ScheduleCategory.GYM.name,
@@ -741,6 +742,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Breakfast & Setup",
                         category = ScheduleCategory.BREAK.name,
@@ -751,6 +753,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "2-Hour Deep Focus Block 1",
                         category = ScheduleCategory.STUDY_BLOCK.name,
@@ -761,6 +764,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Rest & Stretch Break",
                         category = ScheduleCategory.BREAK.name,
@@ -771,6 +775,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "2-Hour Deep Focus Block 2",
                         category = ScheduleCategory.STUDY_BLOCK.name,
@@ -781,6 +786,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Lunch & Relaxation",
                         category = ScheduleCategory.LUNCH.name,
@@ -791,6 +797,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Afternoon Study & Practice Block",
                         category = ScheduleCategory.STUDY_BLOCK.name,
@@ -801,6 +808,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Evening Tea & Walk",
                         category = ScheduleCategory.BREAK.name,
@@ -811,6 +819,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Targeted Revision / Skill Work",
                         category = ScheduleCategory.STUDY_BLOCK.name,
@@ -821,6 +830,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Dinner & Wind Down",
                         category = ScheduleCategory.LUNCH.name,
@@ -831,6 +841,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Evening Review & Next Day Plan",
                         category = ScheduleCategory.BREAK.name,
@@ -841,6 +852,7 @@ object DefaultScheduleProvider {
                         sortOrder = order++
                     ),
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Sleep",
                         category = ScheduleCategory.SLEEP.name,

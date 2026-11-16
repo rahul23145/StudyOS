@@ -42,7 +42,15 @@ class TodayScheduleAdapter(
         fun bind(model: TodayScheduleUiModel) {
             val item = model.item
             binding.tvTitle.text = item.title
-            binding.tvTime.text = "${item.startTime} - ${item.endTime} (${item.durationMinutes} min)"
+
+            val durationFormatted = if (item.durationMinutes >= 60) {
+                val h = item.durationMinutes / 60
+                val m = item.durationMinutes % 60
+                if (m > 0) "${h}h ${m}m" else "${h} hr"
+            } else {
+                "${item.durationMinutes} min"
+            }
+            binding.tvTime.text = "⏱️ $durationFormatted • ~${item.startTime} (Flexible)"
             binding.tvNotes.text = if (item.notes.isNotBlank()) item.notes else "No notes"
 
             val category = item.getCategoryEnum()

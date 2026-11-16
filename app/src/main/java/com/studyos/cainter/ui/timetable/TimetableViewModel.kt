@@ -31,6 +31,9 @@ class TimetableViewModel(
 
     init {
         viewModelScope.launch {
+            repository.removeDuplicates()
+        }
+        viewModelScope.launch {
             combine(_selectedDay, repository.getActiveScheduleType()) { day, activeType ->
                 val typeId = activeType?.id ?: repository.getActiveScheduleTypeSync()?.id ?: 1L
                 Pair(day, typeId)
@@ -66,7 +69,7 @@ class TimetableViewModel(
 
     fun deleteItem(item: ScheduleItem) {
         viewModelScope.launch {
-            repository.deleteItem(item)
+            repository.deleteItemById(item.id)
         }
     }
 

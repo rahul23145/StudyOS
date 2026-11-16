@@ -60,6 +60,8 @@ abstract class AppDatabase : RoomDatabase() {
                 }
                 lectureDao().insertAll(trackers)
             }
+            // Always purge any duplicate entries
+            scheduleDao().removeDuplicates()
         }
     }
 
@@ -98,7 +100,7 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onOpen(db)
                 INSTANCE?.let { database ->
                     scope.launch(Dispatchers.IO) {
-                        database.ensureSeeded()
+                        database.scheduleDao().removeDuplicates()
                     }
                 }
             }

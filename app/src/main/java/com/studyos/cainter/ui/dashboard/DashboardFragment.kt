@@ -43,17 +43,7 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        setupGymLedgerCard()
         observeUiState()
-    }
-
-    private fun setupGymLedgerCard() {
-        binding.cardGymLedger.setOnClickListener {
-            startActivity(android.content.Intent(requireContext(), com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
-        }
-        binding.btnOpenGymLedger.setOnClickListener {
-            startActivity(android.content.Intent(requireContext(), com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
-        }
     }
 
     private fun setupRecyclerView() {
@@ -115,18 +105,22 @@ class DashboardFragment : Fragment() {
                     // Current Focus Card
                     if (state.currentItem != null) {
                         val current = state.currentItem
-                        binding.tvFocusLabel.text = "CURRENT FOCUS"
+                        val durStr = if (current.durationMinutes >= 60) "${current.durationMinutes / 60}h ${current.durationMinutes % 60}m" else "${current.durationMinutes}m"
+                        binding.tvFocusLabel.text = "CURRENT FOCUS BLOCK"
                         binding.tvCurrentActivityTitle.text = current.title
-                        binding.tvCurrentActivityTime.text = "${current.startTime} - ${current.endTime} (${current.durationMinutes}m)"
+                        binding.tvCurrentActivityTime.text = "⏱️ $durStr block • Target ~${current.startTime} (Flexible)"
                     } else {
-                        binding.tvFocusLabel.text = "NEXT FOCUS"
+                        binding.tvFocusLabel.text = "UPCOMING FOCUS BLOCK"
                         binding.tvCurrentActivityTitle.text = state.nextItem?.title ?: "Free Review / Rest"
-                        binding.tvCurrentActivityTime.text = state.nextItem?.let { "${it.startTime} - ${it.endTime}" } ?: "Prepare for tomorrow"
+                        binding.tvCurrentActivityTime.text = state.nextItem?.let {
+                            val durStr = if (it.durationMinutes >= 60) "${it.durationMinutes / 60}h ${it.durationMinutes % 60}m" else "${it.durationMinutes}m"
+                            "⏱️ $durStr block • Target ~${it.startTime} (Flexible)"
+                        } ?: "Plan your next milestone"
                     }
 
                     if (state.nextItem != null && state.currentItem != null) {
                         binding.tvUpNext.visibility = View.VISIBLE
-                        binding.tvUpNext.text = "Up Next: ${state.nextItem.title} (${state.nextItem.startTime})"
+                        binding.tvUpNext.text = "Next: ${state.nextItem.title} (~${state.nextItem.startTime})"
                     } else {
                         binding.tvUpNext.visibility = View.GONE
                     }

@@ -33,9 +33,17 @@ class TimetableAdapter(
 
         fun bind(item: ScheduleItem) {
             binding.tvTitle.text = item.title
-            binding.tvStartTime.text = item.startTime
-            binding.tvEndTime.text = item.endTime
-            binding.tvDuration.text = "${item.durationMinutes} min"
+
+            val durationFormatted = if (item.durationMinutes >= 60) {
+                val h = item.durationMinutes / 60
+                val m = item.durationMinutes % 60
+                if (m > 0) "${h}h ${m}m" else "${h} hr"
+            } else {
+                "${item.durationMinutes}m"
+            }
+            binding.tvStartTime.text = durationFormatted
+            binding.tvEndTime.text = "~${item.startTime}"
+            binding.tvDuration.text = "Flexible"
             binding.tvNotes.text = if (item.notes.isNotBlank()) item.notes else "No notes"
 
             val category = item.getCategoryEnum()

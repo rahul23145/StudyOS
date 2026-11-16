@@ -1,11 +1,40 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Enforce consistent crisp styling across Day/Night -->
     <style name="Theme.StudyOS" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/secondary</item>
+        <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
-        <item name="colorSecondary">@color/accent_emerald</item>
-        <item name="colorOnSecondary">@color/surface_dark</item>
-        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+
+        <!-- Surfaces & Containers (Pure White & Light Accents) -->
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="colorOnSurface">@color/text_primary_light</item>
+        <item name="colorSurfaceVariant">@color/surface_variant_light</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>
+        <item name="colorSecondaryContainer">#E0F2FE</item>
+        <item name="colorOnSecondaryContainer">@color/primary</item>
+        <item name="colorPrimaryContainer">#E0E7FF</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
+
+        <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
-        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="android:colorBackground">@color/background_light</item>
+    </style>
+
+    <!-- Custom Crisp Filter Chip for Timetable Days -->
+    <style name="StudyOS.Chip.DayFilter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_background_selector</item>
+        <item name="android:textColor">@color/chip_text_selector</item>
+        <item name="chipStrokeColor">@color/chip_stroke_selector</item>
+        <item name="chipStrokeWidth">1.5dp</item>
+        <item name="checkedIconTint">@color/chip_icon_selector</item>
+        <item name="chipCornerRadius">18dp</item>
+    </style>
+
+    <!-- Clean Light Active Indicator for Bottom Navigation -->
+    <style name="StudyOS.BottomNav.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">#E0F2FE</item>
+        <item name="android:width">48dp</item>
+        <item name="android:height">28dp</item>
     </style>
 </resources>

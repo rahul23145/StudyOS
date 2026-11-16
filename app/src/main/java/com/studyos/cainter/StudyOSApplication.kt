@@ -1,6 +1,7 @@
 package com.studyos.cainter
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import com.studyos.cainter.data.local.AppDatabase
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
@@ -36,6 +37,9 @@ class StudyOSApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Lock app to clean, crisp light theme to prevent device dark mode from muddying selection colors
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         // Ensure database defaults are populated on first launch
         applicationScope.launch(Dispatchers.IO) {
             database.openHelper.writableDatabase

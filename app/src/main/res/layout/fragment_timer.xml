@@ -267,13 +267,13 @@
                 tools:visibility="visible" />
         </LinearLayout>
 
-        <!-- Complete Early & Auto-Adjust Button -->
+        <!-- Complete Early Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCompleteEarly"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:text="⚡ Completed Fast? Mark Done &amp; Auto-Adjust"
+            android:text="⚡ Finished Early? Mark Done &amp; Next Task"
             android:textColor="@color/accent_emerald"
             android:textStyle="bold"
             android:textSize="13sp"
