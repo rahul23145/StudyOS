@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_dashboard"
+        android:title="@string/nav_dashboard" />
+
+    <item
+        android:id="@+id/navigation_timetable"
+        android:icon="@drawable/ic_calendar"
+        android:title="@string/nav_timetable" />
+
+    <item
+        android:id="@+id/navigation_lectures"
+        android:icon="@drawable/ic_video"
+        android:title="@string/nav_lectures" />
+
+    <item
+        android:id="@+id/navigation_timer"
+        android:icon="@drawable/ic_timer"
+        android:title="@string/nav_timer" />
+
+    <item
+        android:id="@+id/navigation_analytics"
+        android:icon="@drawable/ic_analytics"
+        android:title="@string/nav_analytics" />
+</menu>

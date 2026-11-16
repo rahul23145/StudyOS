@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Brand Palette (Executive CA Inter Theme) -->
+    <color name="primary">#1A365D</color>
+    <color name="primary_variant">#0F2444</color>
+    <color name="on_primary">#FFFFFF</color>
+
+    <color name="secondary">#0284C7</color>
+    <color name="secondary_variant">#0369A1</color>
+    <color name="on_secondary">#FFFFFF</color>
+
+    <color name="accent_emerald">#10B981</color>
+    <color name="accent_emerald_light">#D1FAE5</color>
+    <color name="accent_amber">#F59E0B</color>
+    <color name="accent_amber_light">#FEF3C7</color>
+    <color name="accent_rose">#F43F5E</color>
+    <color name="accent_indigo">#6366F1</color>
+    <color name="accent_purple">#8B5CF6</color>
+    <color name="accent_cyan">#06B6D4</color>
+
+    <!-- Category Specific Tag Colors -->
+    <color name="category_costing">#0284C7</color>
+    <color name="category_audit">#8B5CF6</color>
+    <color name="category_study">#10B981</color>
+    <color name="category_tuition">#F59E0B</color>
+    <color name="category_fitness">#EC4899</color>
+    <color name="category_travel">#64748B</color>
+    <color name="category_routine">#475569</color>
+
+    <!-- Surfaces & Backgrounds -->
+    <color name="background_light">#F8FAFC</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_card_light">#FFFFFF</color>
+    <color name="surface_variant_light">#F1F5F9</color>
+    <color name="divider_light">#E2E8F0</color>
+
+    <color name="background_dark">#0F172A</color>
+    <color name="surface_dark">#1E293B</color>
+    <color name="surface_card_dark">#1E293B</color>
+    <color name="surface_variant_dark">#334155</color>
+    <color name="divider_dark">#334155</color>
+
+    <color name="text_primary_light">#0F172A</color>
+    <color name="text_secondary_light">#64748B</color>
+    <color name="text_tertiary_light">#94A3B8</color>
+
+    <color name="text_primary_dark">#F8FAFC</color>
+    <color name="text_secondary_dark">#94A3B8</color>
+    <color name="text_tertiary_dark">#64748B</color>
+</resources>

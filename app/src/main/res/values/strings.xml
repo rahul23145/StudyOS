@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">StudyOS</string>
+    <string name="app_tagline">CA Intermediate Mastery OS</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_timetable">Timetable</string>
+    <string name="nav_lectures">Lectures</string>
+    <string name="nav_timer">Timer</string>
+    <string name="nav_analytics">Progress</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_greeting">Target CA Inter</string>
+    <string name="today_schedule">Today\'s Schedule</string>
+    <string name="current_block">Current Focus</string>
+    <string name="next_block">Up Next</string>
+    <string name="daily_completion">Daily Target Progress</string>
+    <string name="study_hours">Study Hours</string>
+    <string name="lectures_today">Today\'s Lectures</string>
+    <string name="streak_days">%d Day Streak</string>
+    <string name="no_activities_today">No scheduled activities for today.</string>
+
+    <!-- Lectures Tracker -->
+    <string name="costing_tracker">Costing Lectures (Paper 4)</string>
+    <string name="audit_tracker">Auditing &amp; Ethics (Paper 5)</string>
+    <string name="costing_target_desc">2 Lectures Daily (2h 18m each)</string>
+    <string name="audit_target_desc">2 Lectures Daily Mon–Sat (1h 30m each)</string>
+    <string name="sunday_audit_desc">Sunday Audit-Only Deep Dive &amp; SA Practice</string>
+
+    <!-- Timetable -->
+    <string name="weekly_timetable">Weekly Routine</string>
+    <string name="add_schedule_item">Add Activity</string>
+    <string name="edit_schedule_item">Edit Activity</string>
+    <string name="reset_default_schedule">Reset to CA Inter Schedule</string>
+    <string name="reset_confirm_msg">This will restore the standard CA Inter schedule (Costing 2x, Audit 2x, MWF Tuition, TTSS Running, Gym, Meals, Sleep 11:30 PM, Wake 7 AM). Continue?</string>
+
+    <!-- Days of week -->
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+
+    <!-- Timer Presets -->
+    <string name="timer_study_block">2h Study Block</string>
+    <string name="timer_costing_lecture">Costing (2h 18m)</string>
+    <string name="timer_audit_lecture">Audit (1h 30m)</string>
+    <string name="timer_tuition">Tuition (60m)</string>
+    <string name="timer_break_short">Break (15m)</string>
+    <string name="timer_break_long">Break (30m)</string>
+
+    <!-- Actions -->
+    <string name="start">Start</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="reset">Reset</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="log_session">Log Completed Session</string>
+    <string name="session_completed">Study Session Completed!</string>
+    <string name="session_logged_success">Session recorded in study database!</string>
+</resources>
