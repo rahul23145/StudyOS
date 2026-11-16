@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- 100% Offline App: NO INTERNET PERMISSION REQUIRED -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".StudyOSApplication"
@@ -23,6 +27,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.distraction.BlockedAppActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.StudyOS" />
 
     </application>
 

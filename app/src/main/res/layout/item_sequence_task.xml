@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardSequenceTask"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/divider_light"
+    app:cardBackgroundColor="@color/surface_card_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvStepNumber"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:background="@drawable/category_badge_bg"
+            android:backgroundTint="@color/surface_variant_light"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="1" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tvSequenceTaskTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary_light"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Costing Lecture 1" />
+
+            <TextView
+                android:id="@+id/tvSequenceTaskDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/secondary"
+                android:textSize="12sp"
+                tools:text="2h 18m • 138 minutes" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvSequenceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/category_badge_bg"
+            android:backgroundTint="@color/surface_variant_light"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textColor="@color/text_secondary_light"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:text="QUEUED" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteSequenceTask"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete"
+            app:tint="@color/text_tertiary_light"
+            android:contentDescription="Remove task" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

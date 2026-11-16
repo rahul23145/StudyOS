@@ -42,6 +42,19 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             switchFragment(dashboardFragment, "Dashboard")
         }
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: android.content.Intent?) {
+        if (intent?.getStringExtra("NAVIGATE_TO") == "TIMER") {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_timer
+        }
     }
 
     private fun setupBottomNavigation() {

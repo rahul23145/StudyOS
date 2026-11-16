@@ -94,10 +94,12 @@ class DashboardViewModel(
 
                     val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = targetHours)
 
+                    val currentStreak = scheduleRepository.calculateStreak()
+
                     DashboardUiState(
                         dateDisplay = DateUtils.getFormattedDisplayDate(),
                         routineLabel = routineLabel,
-                        streakDays = streak,
+                        streakDays = currentStreak,
                         items = uiModels,
                         completedCount = completedCount,
                         totalCount = totalCount,

@@ -10,10 +10,16 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.R
 import com.studyos.cainter.StudyOSApplication
+import com.studyos.cainter.databinding.DialogAddSequenceTaskBinding
 import com.studyos.cainter.databinding.FragmentTimerBinding
+import com.studyos.cainter.ui.distraction.ConfigureDistractionsDialog
+import com.studyos.cainter.util.ZeroDistractionGuard
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class TimerFragment : Fragment() {
@@ -23,8 +29,10 @@ class TimerFragment : Fragment() {
 
     private val viewModel: TimerViewModel by activityViewModels {
         val app = requireActivity().application as StudyOSApplication
-        TimerViewModel.Factory(app, app.studyRepository)
+        TimerViewModel.Factory(app, app.studyRepository, app.scheduleRepository)
     }
+
+    private lateinit var sequenceAdapter: SequenceTaskAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,13 +46,42 @@ class TimerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupModeToggle()
         setupPresets()
+        setupSequenceQueue()
+        setupZeroDistractionMode()
         setupControls()
         observeState()
     }
 
+    private fun setupModeToggle() {
+        binding.toggleTimerMode.check(R.id.btnModeSingle)
+
+        binding.toggleTimerMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            when (checkedId) {
+                R.id.btnModeSingle -> {
+                    viewModel.setSequenceMode(false)
+                    binding.layoutSinglePresets.visibility = View.VISIBLE
+                    binding.layoutSequenceQueue.visibility = View.GONE
+                    binding.btnPreviousTask.visibility = View.GONE
+                    binding.btnSkipTask.visibility = View.GONE
+                    binding.btnLogSession.visibility = View.VISIBLE
+                }
+                R.id.btnModeSequence -> {
+                    viewModel.setSequenceMode(true)
+                    binding.layoutSinglePresets.visibility = View.GONE
+                    binding.layoutSequenceQueue.visibility = View.VISIBLE
+                    binding.btnPreviousTask.visibility = View.VISIBLE
+                    binding.btnSkipTask.visibility = View.VISIBLE
+                    binding.btnLogSession.visibility = View.GONE
+                }
+            }
+        }
+    }
+
     private fun setupPresets() {
-        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+        if (BuildConfig.IS_CUSTOM_APP) {
             binding.btnPresetStudyBlock.text = "2h Study Block"
             binding.btnPresetCosting.text = "50m Focus"
             binding.btnPresetAudit.text = "90m Deep Work"
@@ -57,13 +94,95 @@ class TimerFragment : Fragment() {
             binding.btnPresetTuition.setOnClickListener { viewModel.setPreset("25m Pomodoro", 25) }
             binding.btnPresetBreak.setOnClickListener { viewModel.setPreset("15m Break", 15) }
         } else {
-            // Rahul's CA Inter Presets
-            binding.btnPresetStudyBlock.setOnClickListener { viewModel.setPreset("2h Study Block", 120) }
+            binding.btnPresetStudyBlock.setOnClickListener { viewModel.setPreset("2-Hour Deep Study Block", 120) }
             binding.btnPresetCosting.setOnClickListener { viewModel.setPreset("Costing Lecture (2h 18m)", 138) }
             binding.btnPresetAudit.setOnClickListener { viewModel.setPreset("Audit Lecture (1h 30m)", 90) }
-            binding.btnPresetBreak.setOnClickListener { viewModel.setPreset("15m Break", 15) }
             binding.btnPresetTuition.setOnClickListener { viewModel.setPreset("Tuition Class (60m)", 60) }
+            binding.btnPresetBreak.setOnClickListener { viewModel.setPreset("15m Refreshment Break", 15) }
         }
+    }
+
+    private fun setupSequenceQueue() {
+        sequenceAdapter = SequenceTaskAdapter(
+            tasks = emptyList(),
+            activeIndex = 0,
+            onTaskSelected = { index -> viewModel.selectSequenceTask(index) },
+            onDeleteClicked = { index -> viewModel.removeSequenceTask(index) }
+        )
+        binding.rvSequenceTasks.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvSequenceTasks.adapter = sequenceAdapter
+
+        binding.swAutoAdvance.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.toggleAutoAdvance(isChecked)
+        }
+
+        binding.btnLoadTodaySchedule.setOnClickListener {
+            viewModel.loadTodayScheduleAsSequence()
+            Toast.makeText(requireContext(), "Loaded today's scheduled tasks into sequence!", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnAddSequenceTask.setOnClickListener {
+            showAddSequenceTaskDialog()
+        }
+
+        binding.btnPreviousTask.setOnClickListener {
+            viewModel.previousTask()
+        }
+
+        binding.btnSkipTask.setOnClickListener {
+            viewModel.skipToNextTask()
+        }
+    }
+
+    private fun showAddSequenceTaskDialog() {
+        val addBinding = DialogAddSequenceTaskBinding.inflate(layoutInflater)
+        MaterialAlertDialogBuilder(requireContext())
+            .setView(addBinding.root)
+            .setPositiveButton("Add Task") { _, _ ->
+                val title = addBinding.etTaskTitle.text.toString().trim()
+                val duration = addBinding.etTaskDurationMinutes.text.toString().toIntOrNull() ?: 60
+                if (title.isNotBlank()) {
+                    viewModel.addCustomSequenceTask(title, duration)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun setupZeroDistractionMode() {
+        val context = requireContext()
+        binding.swZeroDistraction.isChecked = ZeroDistractionGuard.isEnabled(context)
+
+        binding.swZeroDistraction.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                if (!ZeroDistractionGuard.hasUsagePermission(context)) {
+                    showUsagePermissionDialog()
+                } else {
+                    ZeroDistractionGuard.setEnabled(context, true)
+                    Toast.makeText(context, "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                ZeroDistractionGuard.setEnabled(context, false)
+                Toast.makeText(context, "Zero Distraction Mode Deactivated", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnConfigureDistractions.setOnClickListener {
+            ConfigureDistractionsDialog.newInstance().show(parentFragmentManager, "ConfigureDistractions")
+        }
+    }
+
+    private fun showUsagePermissionDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("🛡️ Enable App Blocker")
+            .setMessage("Zero Distraction Mode blocks chosen distracting apps (Instagram, YouTube, etc.) while your timer is running. It works 100% locally and offline without internet.\n\nPlease grant 'Usage Access' permission in Android Settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                ZeroDistractionGuard.openUsageSettings(requireContext())
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                binding.swZeroDistraction.isChecked = false
+            }
+            .show()
     }
 
     private fun setupControls() {
@@ -77,7 +196,7 @@ class TimerFragment : Fragment() {
 
         binding.btnLogSession.setOnClickListener {
             viewModel.logCurrentSession()
-            Toast.makeText(requireContext(), "Session logged in Study Database!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Logged study session in database!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -86,49 +205,74 @@ class TimerFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
-                        binding.tvTimerPresetLabel.text = state.presetTitle
                         binding.tvTimerDigits.text = state.formattedTime
                         binding.circularTimerProgress.progress = state.progressPercent
+                        binding.tvTimerPresetLabel.text = state.presetTitle
 
                         when (state.state) {
                             TimerState.IDLE -> {
                                 binding.btnStartPauseTimer.text = "Start"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
-                                binding.tvTimerStatus.text = "READY"
+                                binding.tvTimerStatus.text = "READY TO FOCUS"
+                                binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.secondary))
                             }
                             TimerState.RUNNING -> {
                                 binding.btnStartPauseTimer.text = "Pause"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_pause)
-                                binding.tvTimerStatus.text = "FOCUSING"
+                                binding.tvTimerStatus.text = "FOCUS IN PROGRESS"
+                                binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_emerald))
                             }
                             TimerState.PAUSED -> {
                                 binding.btnStartPauseTimer.text = "Resume"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
-                                binding.tvTimerStatus.text = "PAUSED"
+                                binding.tvTimerStatus.text = "TIMER PAUSED"
+                                binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_amber))
                             }
                             TimerState.FINISHED -> {
-                                binding.btnStartPauseTimer.text = "Restart"
+                                binding.btnStartPauseTimer.text = "Reset"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_reset)
-                                binding.tvTimerStatus.text = "FINISHED"
+                                binding.tvTimerStatus.text = "SESSION COMPLETE! GREAT JOB!"
+                                binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_emerald))
                             }
                         }
                     }
                 }
 
                 launch {
-                    viewModel.timerFinishedEvent.collect { title ->
+                    combine(viewModel.sequenceQueue, viewModel.currentSequenceIndex) { queue, index ->
+                        Pair(queue, index)
+                    }.collect { (queue, index) ->
+                        sequenceAdapter.updateData(queue, index)
+                    }
+                }
+
+                launch {
+                    viewModel.isAutoAdvanceEnabled.collect { isAuto ->
+                        if (binding.swAutoAdvance.isChecked != isAuto) {
+                            binding.swAutoAdvance.isChecked = isAuto
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.timerFinishedEvent.collect { sessionName ->
                         MaterialAlertDialogBuilder(requireContext())
-                            .setTitle("Time's Up!")
-                            .setMessage("Congratulations! You completed \"$title\". Would you like to save this to your study history?")
-                            .setPositiveButton("Log Session") { _, _ ->
-                                viewModel.logCurrentSession("Finished complete timer block")
-                                Toast.makeText(requireContext(), "Saved to database!", Toast.LENGTH_SHORT).show()
-                            }
-                            .setNegativeButton("Dismiss", null)
+                            .setTitle("🎉 Session Finished!")
+                            .setMessage("Congratulations! You completed '$sessionName'.\n\nYour study time has been recorded.")
+                            .setPositiveButton("Awesome", null)
                             .show()
                     }
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh usage permission switch state if user just came back from Android settings
+        val context = requireContext()
+        if (ZeroDistractionGuard.isEnabled(context) && ZeroDistractionGuard.hasUsagePermission(context)) {
+            binding.swZeroDistraction.isChecked = true
         }
     }
 

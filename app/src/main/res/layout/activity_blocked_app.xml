@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="28dp"
+    android:background="@color/background_light">
+
+    <ImageView
+        android:id="@+id/ivShield"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:src="@drawable/ic_shield"
+        app:tint="@color/primary"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🛡️ Zero Distraction Mode"
+        android:textColor="@color/primary"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/tvBlockedAppName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/accent_rose"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"
+        tools:text="Instagram is blocked!" />
+
+    <!-- Active Focus Session Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/divider_light"
+        app:cardBackgroundColor="@color/surface_card_light">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACTIVE FOCUS SESSION"
+                android:textColor="@color/text_secondary_light"
+                android:textSize="11sp"
+                android:letterSpacing="0.08"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvActiveTaskTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary_light"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                tools:text="2-Hour Deep Study Block" />
+
+            <TextView
+                android:id="@+id/tvRemainingTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/secondary"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                tools:text="01:42:15" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Time Remaining"
+                android:textColor="@color/text_tertiary_light"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Distraction is the enemy of mastery. Stay focused and complete this session!"
+        android:textColor="@color/text_secondary_light"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:layout_marginBottom="32dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBackToStudy"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Return to StudyOS Timer"
+        android:textSize="16sp"
+        app:icon="@drawable/ic_play"
+        app:backgroundTint="@color/primary"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

@@ -15,29 +15,58 @@
         android:padding="20dp">
 
         <TextView
+            android:id="@+id/tvTimerHeaderTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CA Inter Study Timer"
+            android:text="Study Focus Timer"
             android:textColor="@color/text_primary_light"
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- Timer Mode Toggle: Single Timer vs Sequential Flow -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleTimerMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModeSingle"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Single Timer"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModeSequence"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sequential Flow Mode"
+                android:textSize="12sp" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Current Preset / Task Title -->
         <TextView
             android:id="@+id/tvTimerPresetLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:text="2-Hour Deep Study Block"
             android:textColor="@color/secondary"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <!-- Quick Presets Flow / Chips -->
+        <!-- Quick Presets Flow / Chips (Visible in Single Timer Mode) -->
         <HorizontalScrollView
+            android:id="@+id/layoutSinglePresets"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="20dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -90,7 +119,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             app:cardCornerRadius="24dp"
             app:cardElevation="3dp"
             app:strokeWidth="1dp"
@@ -132,11 +161,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="50dp"
+                    android:layout_marginBottom="46dp"
                     android:textColor="@color/accent_emerald"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    tools:text="FOCUSING" />
+                    tools:text="READY TO FOCUS" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -148,6 +177,16 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:layout_marginBottom="20dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPreviousTask"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:text="Prev"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp"
+                tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetTimer"
@@ -167,9 +206,19 @@
                 android:textSize="16sp"
                 app:icon="@drawable/ic_play"
                 app:backgroundTint="@color/primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSkipTask"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:text="Skip"
+                android:visibility="gone"
+                android:layout_marginStart="8dp"
+                tools:visibility="visible" />
         </LinearLayout>
 
-        <!-- Log Study Session Button -->
+        <!-- Log Study Session Button (Single mode) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogSession"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -177,8 +226,174 @@
             android:layout_height="wrap_content"
             android:text="Record Session in Study Log"
             android:textColor="@color/primary"
+            android:layout_marginBottom="20dp"
             app:icon="@drawable/ic_book"
             app:iconTint="@color/primary" />
+
+        <!-- Sequential Flow Mode Section (Visible when Flow Mode selected) -->
+        <LinearLayout
+            android:id="@+id/layoutSequenceQueue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="24dp"
+            tools:visibility="visible">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider_light"
+                app:cardBackgroundColor="@color/surface_card_light">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Auto-Advance Task Queue"
+                            android:textColor="@color/primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swAutoAdvance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            tools:checked="true" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="When a task finishes, the timer automatically chimes and starts the next task."
+                        android:textColor="@color/text_secondary_light"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLoadTodaySchedule"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Load Today's Schedule"
+                            android:textSize="11sp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAddSequenceTask"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="+ Add Task"
+                            android:textSize="11sp"
+                            android:layout_marginStart="6dp" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSequenceTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxHeight="280dp"
+                        tools:listitem="@layout/item_sequence_task" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Zero Distraction Mode Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/divider_light"
+            app:cardBackgroundColor="@color/surface_card_light">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_shield"
+                        app:tint="@color/primary"
+                        android:layout_marginEnd="10dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Zero Distraction Mode"
+                            android:textColor="@color/text_primary_light"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Blocks distracting apps while timer is active"
+                            android:textColor="@color/text_secondary_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swZeroDistraction"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConfigureDistractions"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="4dp"
+                    android:text="Configure Blocked Apps ⚙️"
+                    android:textSize="12sp"
+                    android:textColor="@color/secondary" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

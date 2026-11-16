@@ -23,4 +23,7 @@ interface StudySessionDao {
 
     @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions WHERE timestamp >= :fromTimestamp AND timestamp < :toTimestamp")
     suspend fun getMinutesBetween(fromTimestamp: Long, toTimestamp: Long): Int
+
+    @Query("SELECT DISTINCT strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch', 'localtime') FROM study_sessions WHERE durationMinutes >= 5")
+    suspend fun getAllStudyDates(): List<String>
 }

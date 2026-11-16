@@ -5,6 +5,7 @@ import com.studyos.cainter.data.default.DefaultScheduleProvider
 import com.studyos.cainter.data.local.CompletionDao
 import com.studyos.cainter.data.local.ScheduleDao
 import com.studyos.cainter.data.local.ScheduleTypeDao
+import com.studyos.cainter.data.local.StudySessionDao
 import com.studyos.cainter.data.local.entity.CompletionRecord
 import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.local.entity.ScheduleType
@@ -17,7 +18,8 @@ import java.time.format.DateTimeFormatter
 class ScheduleRepository(
     private val scheduleDao: ScheduleDao,
     private val completionDao: CompletionDao,
-    private val scheduleTypeDao: ScheduleTypeDao
+    private val scheduleTypeDao: ScheduleTypeDao,
+    private val studySessionDao: StudySessionDao
 ) {
 
     fun getScheduleForDay(dayOfWeek: Int): Flow<List<ScheduleItem>> {
@@ -117,7 +119,6 @@ class ScheduleRepository(
     suspend fun setActiveScheduleType(typeId: Long) {
         scheduleTypeDao.clearActiveStatus()
         scheduleTypeDao.setActiveStatus(typeId)
-        // If the newly activated schedule has 0 items, seed defaults for it
         if (scheduleDao.getScheduleCountForType(typeId) == 0) {
             val items = DefaultScheduleProvider.getScheduleForType(typeId)
             scheduleDao.insertAll(items)
@@ -125,20 +126,21 @@ class ScheduleRepository(
     }
 
     suspend fun calculateStreak(): Int {
-        val completedDates = completionDao.getAllCompletedDates()
-        if (completedDates.isEmpty()) return 0
+        val completedTaskDates = completionDao.getAllCompletedDates()
+        val studyDates = studySessionDao.getAllStudyDates()
+        val allActiveDates = (completedTaskDates + studyDates).toSet()
+        if (allActiveDates.isEmpty()) return 0
 
         var streak = 0
         var checkDate = LocalDate.now()
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE
 
         // Check if today is completed or yesterday
-        val dateSet = completedDates.toSet()
-        if (!dateSet.contains(checkDate.format(formatter))) {
+        if (!allActiveDates.contains(checkDate.format(formatter))) {
             checkDate = checkDate.minusDays(1)
         }
 
-        while (dateSet.contains(checkDate.format(formatter))) {
+        while (allActiveDates.contains(checkDate.format(formatter))) {
             streak++
             checkDate = checkDate.minusDays(1)
         }
