@@ -17,15 +17,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.studyos.cainter.data.local.entity.WorkoutEntry
+
 @Database(
     entities = [
         ScheduleItem::class,
         CompletionRecord::class,
         LectureTracker::class,
         StudySession::class,
-        ScheduleType::class
+        ScheduleType::class,
+        WorkoutEntry::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun lectureDao(): LectureDao
     abstract fun studySessionDao(): StudySessionDao
     abstract fun scheduleTypeDao(): ScheduleTypeDao
+    abstract fun workoutDao(): WorkoutDao
 
     suspend fun ensureSeeded() {
         withContext(Dispatchers.IO) {

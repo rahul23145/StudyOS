@@ -37,6 +37,17 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.menu.findItem(R.id.navigation_lectures)?.title = "Lectures"
         }
 
+        binding.topAppBar.inflateMenu(R.menu.main_top_menu)
+        binding.topAppBar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_gym_ledger -> {
+                    startActivity(android.content.Intent(this, com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+
         setupBottomNavigation()
 
         if (savedInstanceState == null) {

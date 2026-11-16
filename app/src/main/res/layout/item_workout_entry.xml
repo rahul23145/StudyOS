@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="1dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/divider_light"
+    app:cardBackgroundColor="@color/surface_card_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvExerciseName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text_primary_light"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="Barbell Bench Press" />
+
+            <TextView
+                android:id="@+id/tvMuscleBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/category_badge_bg"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="Chest" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteExercise"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/text_tertiary_light"
+                android:contentDescription="Delete" />
+        </LinearLayout>
+
+        <!-- Stats Row: Sets x Reps @ Weight -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvSetsRepsWeight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/secondary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="4 Sets × 10 Reps • 70 kg" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvEntryDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary_light"
+                android:textSize="11sp"
+                tools:text="Today • 07:30 AM" />
+        </LinearLayout>
+
+        <!-- Optional Notes -->
+        <TextView
+            android:id="@+id/tvExerciseNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_secondary_light"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Felt strong, clean form on last set." />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

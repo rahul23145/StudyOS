@@ -319,6 +319,26 @@ class TimerFragment : Fragment() {
             viewModel.resetTimer()
         }
 
+        binding.btnCompleteEarly.setOnClickListener {
+            viewModel.finishCurrentTaskEarly()
+        }
+
+        binding.btnAdjustMinus15.setOnClickListener {
+            viewModel.adjustRemainingTime(-15)
+        }
+
+        binding.btnAdjustMinus5.setOnClickListener {
+            viewModel.adjustRemainingTime(-5)
+        }
+
+        binding.btnAdjustPlus5.setOnClickListener {
+            viewModel.adjustRemainingTime(5)
+        }
+
+        binding.btnAdjustPlus15.setOnClickListener {
+            viewModel.adjustRemainingTime(15)
+        }
+
         binding.btnLogSession.setOnClickListener {
             viewModel.logCurrentSession()
             Toast.makeText(requireContext(), "Logged study session in database!", Toast.LENGTH_SHORT).show()
@@ -340,24 +360,28 @@ class TimerFragment : Fragment() {
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
                                 binding.tvTimerStatus.text = "READY TO FOCUS"
                                 binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.secondary))
+                                binding.btnCompleteEarly.visibility = View.GONE
                             }
                             TimerState.RUNNING -> {
                                 binding.btnStartPauseTimer.text = "Pause"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_pause)
                                 binding.tvTimerStatus.text = "FOCUS IN PROGRESS"
                                 binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_emerald))
+                                binding.btnCompleteEarly.visibility = View.VISIBLE
                             }
                             TimerState.PAUSED -> {
                                 binding.btnStartPauseTimer.text = "Resume"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
                                 binding.tvTimerStatus.text = "TIMER PAUSED"
                                 binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_amber))
+                                binding.btnCompleteEarly.visibility = View.VISIBLE
                             }
                             TimerState.FINISHED -> {
                                 binding.btnStartPauseTimer.text = "Reset"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_reset)
                                 binding.tvTimerStatus.text = "SESSION COMPLETE! GREAT JOB!"
                                 binding.tvTimerStatus.setTextColor(requireContext().getColor(R.color.accent_emerald))
+                                binding.btnCompleteEarly.visibility = View.GONE
                             }
                         }
                     }

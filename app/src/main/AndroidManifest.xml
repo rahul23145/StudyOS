@@ -41,6 +41,11 @@
             android:excludeFromRecents="true"
             android:theme="@style/Theme.StudyOS" />
 
+        <activity
+            android:name=".ui.gym.GymLedgerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StudyOS" />
+
         <service
             android:name=".util.FocusGuardService"
             android:exported="false"

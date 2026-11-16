@@ -54,6 +54,35 @@ class ScheduleRepository(
         scheduleDao.deleteItem(item)
     }
 
+    suspend fun adjustRemainingScheduleFromNow(dayOfWeek: Int, typeId: Long, fromScheduleItemId: Long?) {
+        val items = scheduleDao.getScheduleForDayAndTypeSync(dayOfWeek, typeId).sortedBy { it.sortOrder }
+        val now = java.time.LocalTime.now()
+        var currentPointer = now
+
+        var foundTarget = (fromScheduleItemId == null)
+        val updatedList = mutableListOf<ScheduleItem>()
+
+        for (item in items) {
+            if (!foundTarget) {
+                if (item.id == fromScheduleItemId) {
+                    foundTarget = true
+                }
+                continue
+            }
+
+            val startStr = String.format(java.util.Locale.US, "%02d:%02d", currentPointer.hour, currentPointer.minute)
+            val endPointer = currentPointer.plusMinutes(item.durationMinutes.toLong().coerceAtLeast(1L))
+            val endStr = String.format(java.util.Locale.US, "%02d:%02d", endPointer.hour, endPointer.minute)
+
+            updatedList.add(item.copy(startTime = startStr, endTime = endStr))
+            currentPointer = endPointer
+        }
+
+        for (updated in updatedList) {
+            scheduleDao.updateItem(updated)
+        }
+    }
+
     suspend fun resetToDefaultSchedule() {
         val activeId = getActiveScheduleTypeSync()?.id ?: 1L
         resetScheduleForType(activeId)

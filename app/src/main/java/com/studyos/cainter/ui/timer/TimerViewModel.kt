@@ -198,6 +198,103 @@ class TimerViewModel(
         }
     }
 
+    fun finishCurrentTaskEarly() {
+        viewModelScope.launch {
+            val total = _uiState.value.totalSeconds
+            val remaining = _uiState.value.remainingSeconds
+            val elapsedSec = (total - remaining).coerceAtLeast(60L)
+            val elapsedMins = (elapsedSec / 60).toInt().coerceAtLeast(1)
+
+            timerJob?.cancel()
+
+            // 1. Log actual elapsed study time
+            studyRepository.logSession(
+                subject = _uiState.value.presetTitle,
+                category = "TIMER_SESSION",
+                durationMinutes = elapsedMins,
+                notes = "Completed early in ${elapsedMins}m via Flow Timer"
+            )
+
+            SoundVibrationHelper.playSessionCompleteAlert(getApplication())
+
+            // 2. If in sequence mode, advance and adjust timetable
+            if (_isSequenceMode.value) {
+                val list = _sequenceQueue.value.toMutableList()
+                val currentIdx = _currentSequenceIndex.value
+                if (currentIdx in list.indices) {
+                    val finishedTask = list[currentIdx]
+                    list[currentIdx] = finishedTask.copy(isCompleted = true)
+                    _sequenceQueue.value = list
+
+                    val todayDate = DateUtils.getTodayDateString()
+                    val todayDay = DateUtils.getTodayDayOfWeek()
+                    val activeType = scheduleRepository.getActiveScheduleTypeSync()
+                    val typeId = activeType?.id ?: 1L
+
+                    // Mark completion in timetable
+                    if (finishedTask.scheduleItemId != null) {
+                        scheduleRepository.setCompletion(todayDate, finishedTask.scheduleItemId, true)
+                        // Adjust remaining timetable blocks starting from right now!
+                        scheduleRepository.adjustRemainingScheduleFromNow(todayDay, typeId, finishedTask.scheduleItemId)
+                    }
+
+                    // Auto-advance to next sequential task
+                    if ((currentIdx + 1) < list.size) {
+                        val nextIdx = currentIdx + 1
+                        selectSequenceTask(nextIdx)
+                        _timerFinishedEvent.emit("Completed '${finishedTask.title}' in ${elapsedMins}m! Starting '${list[nextIdx].title}'. Timetable auto-adjusted to current time.")
+                        startTimer()
+                        return@launch
+                    }
+                }
+            }
+
+            // If single mode or no more tasks
+            FocusGuardService.stopService(getApplication())
+            ZeroDistractionGuard.setSessionActive(getApplication(), false)
+            _uiState.value = _uiState.value.copy(
+                state = TimerState.FINISHED,
+                progressPercent = 0,
+                formattedTime = "00:00:00"
+            )
+            _timerFinishedEvent.emit("Completed '${_uiState.value.presetTitle}' early in ${elapsedMins}m!")
+        }
+    }
+
+    fun adjustRemainingTime(deltaMinutes: Int) {
+        val deltaSec = deltaMinutes * 60L
+        val currentRem = _uiState.value.remainingSeconds
+        val newRem = currentRem + deltaSec
+
+        if (newRem <= 0) {
+            finishCurrentTaskEarly()
+            return
+        }
+
+        val newTotal = (_uiState.value.totalSeconds + deltaSec).coerceAtLeast(newRem)
+        val progress = if (newTotal > 0) ((newRem * 100) / newTotal).toInt() else 0
+        val formatted = formatSeconds(newRem)
+
+        _uiState.value = _uiState.value.copy(
+            totalSeconds = newTotal,
+            remainingSeconds = newRem,
+            formattedTime = formatted,
+            progressPercent = progress
+        )
+
+        FocusGuardService.updateService(
+            getApplication(),
+            _uiState.value.presetTitle,
+            formatted
+        )
+        ZeroDistractionGuard.setSessionActive(
+            getApplication(),
+            true,
+            _uiState.value.presetTitle,
+            formatted
+        )
+    }
+
     private fun startTimer() {
         timerJob?.cancel()
         _uiState.value = _uiState.value.copy(state = TimerState.RUNNING)

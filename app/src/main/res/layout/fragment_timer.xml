@@ -161,11 +161,60 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="46dp"
+                    android:layout_marginBottom="16dp"
                     android:textColor="@color/accent_emerald"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     tools:text="READY TO FOCUS" />
+
+                <!-- Quick Flexible Time Adjustment Controls -->
+                <LinearLayout
+                    android:id="@+id/layoutQuickAdjust"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjustMinus15"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="-15m"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:layout_marginEnd="4dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjustMinus5"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="-5m"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:layout_marginEnd="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjustPlus5"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="+5m"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp"
+                        android:layout_marginEnd="4dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjustPlus15"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="+15m"
+                        android:textSize="11sp"
+                        android:paddingHorizontal="8dp" />
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -176,7 +225,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="12dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPreviousTask"
@@ -217,6 +266,20 @@
                 android:layout_marginStart="8dp"
                 tools:visibility="visible" />
         </LinearLayout>
+
+        <!-- Complete Early & Auto-Adjust Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCompleteEarly"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="⚡ Completed Fast? Mark Done &amp; Auto-Adjust"
+            android:textColor="@color/accent_emerald"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:layout_marginBottom="16dp"
+            app:icon="@drawable/ic_check"
+            app:iconTint="@color/accent_emerald" />
 
         <!-- Log Study Session Button (Single mode) -->
         <com.google.android.material.button.MaterialButton

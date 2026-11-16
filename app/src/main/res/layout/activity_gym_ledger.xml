@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_light">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarGym"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
+            app:title="Gym &amp; Workout Ledger"
+            app:titleTextColor="@color/on_primary"
+            app:subtitle="Exercise Sets, Reps &amp; Progress"
+            app:subtitleTextColor="#93C5FD"
+            app:navigationIcon="@drawable/ic_reset"
+            app:navigationIconTint="@color/on_primary" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Summary Stats Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider_light"
+                app:cardBackgroundColor="@color/surface_card_light">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvStatTodayExercises"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="4" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Today's Exercises"
+                            android:textColor="@color/text_secondary_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/divider_light" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvStatTotalExercises"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/secondary"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="28" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Logged"
+                            android:textColor="@color/text_secondary_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/divider_light" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvStatTotalDays"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/accent_emerald"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="7" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Active Days"
+                            android:textColor="@color/text_secondary_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Add Action Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddExerciseBanner"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="+ Log New Exercise"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_fitness"
+                app:cornerRadius="14dp" />
+
+            <!-- Empty State View -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyGym"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_fitness"
+                    app:tint="@color/text_tertiary_light"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No exercises logged yet"
+                    android:textColor="@color/text_primary_light"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tap '+ Log New Exercise' to record your workout sets, reps and weights."
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="12sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- Workout Entries RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvGymEntries"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_workout_entry" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

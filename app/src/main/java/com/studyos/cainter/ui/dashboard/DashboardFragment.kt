@@ -43,7 +43,17 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        setupGymLedgerCard()
         observeUiState()
+    }
+
+    private fun setupGymLedgerCard() {
+        binding.cardGymLedger.setOnClickListener {
+            startActivity(android.content.Intent(requireContext(), com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
+        }
+        binding.btnOpenGymLedger.setOnClickListener {
+            startActivity(android.content.Intent(requireContext(), com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
+        }
     }
 
     private fun setupRecyclerView() {
