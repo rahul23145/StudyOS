@@ -38,14 +38,22 @@ class ScheduleTypeAdapter(
             binding.tvTypeTarget.text = "Target: ${type.targetDailyHours}h/day • Wake ${type.wakeTime} • Sleep ${type.sleepTime}"
             binding.rbSelected.isChecked = type.isActive
 
+            val density = binding.root.context.resources.displayMetrics.density
+            val stroke2dp = (2 * density).toInt().coerceAtLeast(2)
+            val stroke1dp = (1 * density).toInt().coerceAtLeast(1)
+
             if (type.isActive) {
                 binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.primary)
-                binding.cardScheduleType.strokeWidth = 4
-                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.surface_variant_light))
+                binding.cardScheduleType.strokeWidth = stroke2dp
+                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.surface_card_light))
+                binding.tvActiveBadge.visibility = View.VISIBLE
+                binding.tvTypeName.setTextColor(ContextCompat.getColor(binding.root.context, R.color.primary))
             } else {
                 binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.divider_light)
-                binding.cardScheduleType.strokeWidth = 1
+                binding.cardScheduleType.strokeWidth = stroke1dp
                 binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.surface_card_light))
+                binding.tvActiveBadge.visibility = View.GONE
+                binding.tvTypeName.setTextColor(ContextCompat.getColor(binding.root.context, R.color.text_primary_light))
             }
 
             val clickListener = View.OnClickListener {

@@ -1,10 +1,12 @@
 package com.studyos.cainter.ui.timer
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -56,9 +58,11 @@ class TimerFragment : Fragment() {
 
     private fun setupModeToggle() {
         binding.toggleTimerMode.check(R.id.btnModeSingle)
+        updateToggleButtonStyles(R.id.btnModeSingle)
 
         binding.toggleTimerMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
+            updateToggleButtonStyles(checkedId)
             when (checkedId) {
                 R.id.btnModeSingle -> {
                     viewModel.setSequenceMode(false)
@@ -77,6 +81,24 @@ class TimerFragment : Fragment() {
                     binding.btnLogSession.visibility = View.GONE
                 }
             }
+        }
+    }
+
+    private fun updateToggleButtonStyles(checkedId: Int) {
+        val primary = ContextCompat.getColor(requireContext(), R.color.primary)
+        val onPrimary = ContextCompat.getColor(requireContext(), R.color.on_primary)
+        val textSecondary = ContextCompat.getColor(requireContext(), R.color.text_secondary_light)
+
+        if (checkedId == R.id.btnModeSingle) {
+            binding.btnModeSingle.setBackgroundColor(primary)
+            binding.btnModeSingle.setTextColor(onPrimary)
+            binding.btnModeSequence.setBackgroundColor(Color.TRANSPARENT)
+            binding.btnModeSequence.setTextColor(primary)
+        } else {
+            binding.btnModeSequence.setBackgroundColor(primary)
+            binding.btnModeSequence.setTextColor(onPrimary)
+            binding.btnModeSingle.setBackgroundColor(Color.TRANSPARENT)
+            binding.btnModeSingle.setTextColor(primary)
         }
     }
 
@@ -155,7 +177,9 @@ class TimerFragment : Fragment() {
 
         binding.swZeroDistraction.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                if (!ZeroDistractionGuard.hasUsagePermission(context)) {
+                if (!ZeroDistractionGuard.hasAccessibilityPermission(context)) {
+                    showAccessibilityPermissionDialog()
+                } else if (!ZeroDistractionGuard.hasUsagePermission(context)) {
                     showUsagePermissionDialog()
                 } else {
                     ZeroDistractionGuard.setEnabled(context, true)
@@ -172,17 +196,46 @@ class TimerFragment : Fragment() {
         }
     }
 
-    private fun showUsagePermissionDialog() {
+    private fun showAccessibilityPermissionDialog() {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("🛡️ Enable App Blocker")
-            .setMessage("Zero Distraction Mode blocks chosen distracting apps (Instagram, YouTube, etc.) while your timer is running. It works 100% locally and offline without internet.\n\nPlease grant 'Usage Access' permission in Android Settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
-                ZeroDistractionGuard.openUsageSettings(requireContext())
+            .setTitle("🛡️ Enable Instant App Blocker")
+            .setMessage("To instantly block distracting apps (Instagram, YouTube, etc.) during focus timer sessions with 0ms latency, please turn ON 'StudyOS Focus Guard' under Accessibility in Android Settings.\n\n• 100% Offline & Private\n• NO Internet permissions required\n• Only guards during active study timers")
+            .setPositiveButton("Open Accessibility") { _, _ ->
+                ZeroDistractionGuard.openAccessibilitySettings(requireContext())
             }
             .setNegativeButton("Cancel") { _, _ ->
                 binding.swZeroDistraction.isChecked = false
             }
             .show()
+    }
+
+    private fun showUsagePermissionDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("🛡️ Additional App Access")
+            .setMessage("Please also grant 'Usage Access' permission in Android Settings so StudyOS can monitor background app switches reliably.\n\n100% local and offline.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                ZeroDistractionGuard.openUsageSettings(requireContext())
+            }
+            .setNegativeButton("Skip") { _, _ ->
+                ZeroDistractionGuard.setEnabled(requireContext(), true)
+                Toast.makeText(requireContext(), "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val ctx = context ?: return
+        if (binding.swZeroDistraction.isChecked) {
+            val hasAcc = ZeroDistractionGuard.hasAccessibilityPermission(ctx)
+            val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
+            if (!hasAcc && !hasUsage) {
+                binding.swZeroDistraction.isChecked = false
+                ZeroDistractionGuard.setEnabled(ctx, false)
+            } else {
+                ZeroDistractionGuard.setEnabled(ctx, true)
+            }
+        }
     }
 
     private fun setupControls() {

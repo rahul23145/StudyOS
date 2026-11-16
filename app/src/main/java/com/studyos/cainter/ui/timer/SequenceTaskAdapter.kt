@@ -1,5 +1,7 @@
 package com.studyos.cainter.ui.timer
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,27 +42,57 @@ class SequenceTaskAdapter(
         val durationStr = if (hours > 0 && mins > 0) "${hours}h ${mins}m" else if (hours > 0) "${hours}h" else "${mins}m"
         holder.binding.tvSequenceTaskDuration.text = "$durationStr • ${task.durationMinutes} mins"
 
+        val context = holder.itemView.context
+        val density = context.resources.displayMetrics.density
+        val stroke2dp = (2 * density).toInt().coerceAtLeast(2)
+        val stroke1dp = (1 * density).toInt().coerceAtLeast(1)
+
+        val primaryColor = ContextCompat.getColor(context, R.color.primary)
+        val emeraldColor = ContextCompat.getColor(context, R.color.accent_emerald)
+        val dividerColor = ContextCompat.getColor(context, R.color.divider_light)
+        val whiteColor = ContextCompat.getColor(context, R.color.surface_card_light)
+        val slateLight = ContextCompat.getColor(context, R.color.surface_variant_light)
+        val textSecondary = ContextCompat.getColor(context, R.color.text_secondary_light)
+
         when {
             isDone -> {
-                holder.binding.tvSequenceStatus.text = "COMPLETED"
-                holder.binding.tvSequenceStatus.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.accent_emerald))
-                holder.binding.cardSequenceTask.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.divider_light)
-                holder.binding.cardSequenceTask.strokeWidth = 1
-                holder.binding.cardSequenceTask.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.surface_card_light))
+                holder.binding.tvStepNumber.text = "✓"
+                holder.binding.tvStepNumber.backgroundTintList = ColorStateList.valueOf(emeraldColor)
+                holder.binding.tvStepNumber.setTextColor(Color.WHITE)
+
+                holder.binding.tvSequenceStatus.text = "✓ COMPLETED"
+                holder.binding.tvSequenceStatus.backgroundTintList = ColorStateList.valueOf(emeraldColor)
+                holder.binding.tvSequenceStatus.setTextColor(Color.WHITE)
+
+                holder.binding.cardSequenceTask.strokeColor = emeraldColor
+                holder.binding.cardSequenceTask.strokeWidth = stroke1dp
+                holder.binding.cardSequenceTask.setCardBackgroundColor(whiteColor)
             }
             isActive -> {
-                holder.binding.tvSequenceStatus.text = "ACTIVE NOW"
-                holder.binding.tvSequenceStatus.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.primary))
-                holder.binding.cardSequenceTask.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.primary)
-                holder.binding.cardSequenceTask.strokeWidth = 3
-                holder.binding.cardSequenceTask.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.surface_variant_light))
+                holder.binding.tvStepNumber.text = "${position + 1}"
+                holder.binding.tvStepNumber.backgroundTintList = ColorStateList.valueOf(primaryColor)
+                holder.binding.tvStepNumber.setTextColor(Color.WHITE)
+
+                holder.binding.tvSequenceStatus.text = "▶ RUNNING NOW"
+                holder.binding.tvSequenceStatus.backgroundTintList = ColorStateList.valueOf(primaryColor)
+                holder.binding.tvSequenceStatus.setTextColor(Color.WHITE)
+
+                holder.binding.cardSequenceTask.strokeColor = primaryColor
+                holder.binding.cardSequenceTask.strokeWidth = stroke2dp
+                holder.binding.cardSequenceTask.setCardBackgroundColor(whiteColor)
             }
             else -> {
+                holder.binding.tvStepNumber.text = "${position + 1}"
+                holder.binding.tvStepNumber.backgroundTintList = ColorStateList.valueOf(slateLight)
+                holder.binding.tvStepNumber.setTextColor(textSecondary)
+
                 holder.binding.tvSequenceStatus.text = "QUEUED"
-                holder.binding.tvSequenceStatus.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_secondary_light))
-                holder.binding.cardSequenceTask.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.divider_light)
-                holder.binding.cardSequenceTask.strokeWidth = 1
-                holder.binding.cardSequenceTask.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.surface_card_light))
+                holder.binding.tvSequenceStatus.backgroundTintList = ColorStateList.valueOf(slateLight)
+                holder.binding.tvSequenceStatus.setTextColor(textSecondary)
+
+                holder.binding.cardSequenceTask.strokeColor = dividerColor
+                holder.binding.cardSequenceTask.strokeWidth = stroke1dp
+                holder.binding.cardSequenceTask.setCardBackgroundColor(whiteColor)
             }
         }
 

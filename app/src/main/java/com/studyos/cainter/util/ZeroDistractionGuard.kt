@@ -1,5 +1,6 @@
 package com.studyos.cainter.util
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import com.studyos.cainter.ui.distraction.BlockedAppActivity
 
 data class DistractingAppInfo(
@@ -20,6 +22,9 @@ object ZeroDistractionGuard {
     private const val PREFS_NAME = "studyos_zero_distraction_prefs"
     private const val KEY_ENABLED = "key_distraction_guard_enabled"
     private const val KEY_BLOCKED_PACKAGES = "key_blocked_packages"
+    private const val KEY_SESSION_ACTIVE = "key_session_active"
+    private const val KEY_SESSION_TITLE = "key_session_title"
+    private const val KEY_SESSION_REMAINING = "key_session_remaining"
 
     val DEFAULT_APPS = listOf(
         DistractingAppInfo("com.instagram.android", "Instagram", true),
@@ -34,6 +39,27 @@ object ZeroDistractionGuard {
         DistractingAppInfo("com.zhiliaoapp.musically", "TikTok", true),
         DistractingAppInfo("com.android.chrome", "Chrome Browser", false)
     )
+
+    fun hasAccessibilityPermission(context: Context): Boolean {
+        return try {
+            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager ?: return false
+            val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            enabledServices.any { it.resolveInfo?.serviceInfo?.packageName == context.packageName }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun openAccessibilitySettings(context: Context) {
+        try {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            openUsageSettings(context)
+        }
+    }
 
     fun hasUsagePermission(context: Context): Boolean {
         return try {
@@ -65,7 +91,6 @@ object ZeroDistractionGuard {
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            // Fallback to general settings
             val intent = Intent(Settings.ACTION_SETTINGS).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -83,6 +108,30 @@ object ZeroDistractionGuard {
             .edit()
             .putBoolean(KEY_ENABLED, enabled)
             .apply()
+    }
+
+    fun setSessionActive(context: Context, active: Boolean, title: String = "", remaining: String = "") {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_SESSION_ACTIVE, active)
+            .putString(KEY_SESSION_TITLE, title)
+            .putString(KEY_SESSION_REMAINING, remaining)
+            .apply()
+    }
+
+    fun isFocusSessionRunning(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_SESSION_ACTIVE, false)
+    }
+
+    fun getActiveSessionTitle(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_SESSION_TITLE, "Deep Focus Session") ?: "Deep Focus Session"
+    }
+
+    fun getActiveSessionRemainingTime(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_SESSION_REMAINING, "--:--") ?: "--:--"
     }
 
     fun getBlockedPackages(context: Context): Set<String> {
@@ -104,11 +153,11 @@ object ZeroDistractionGuard {
         taskTitle: String,
         remainingTime: String
     ): Boolean {
-        if (!isEnabled(context) || !hasUsagePermission(context)) return false
+        if (!isEnabled(context)) return false
 
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return false
         val now = System.currentTimeMillis()
-        val events = usageStatsManager.queryEvents(now - 2500, now)
+        val events = usageStatsManager.queryEvents(now - 3000, now)
         val event = UsageEvents.Event()
         var latestForegroundPackage: String? = null
 

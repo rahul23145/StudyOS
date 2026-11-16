@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
 import com.studyos.cainter.util.DateUtils
+import com.studyos.cainter.util.FocusGuardService
 import com.studyos.cainter.util.SoundVibrationHelper
 import com.studyos.cainter.util.ZeroDistractionGuard
 import kotlinx.coroutines.Job
@@ -201,23 +202,48 @@ class TimerViewModel(
         timerJob?.cancel()
         _uiState.value = _uiState.value.copy(state = TimerState.RUNNING)
 
+        FocusGuardService.startService(
+            getApplication(),
+            _uiState.value.presetTitle,
+            _uiState.value.formattedTime
+        )
+        ZeroDistractionGuard.setSessionActive(
+            getApplication(),
+            true,
+            _uiState.value.presetTitle,
+            _uiState.value.formattedTime
+        )
+
         timerJob = viewModelScope.launch {
             while (_uiState.value.remainingSeconds > 0) {
                 delay(1000L)
                 val newRemaining = _uiState.value.remainingSeconds - 1
                 val total = _uiState.value.totalSeconds
                 val progress = if (total > 0) ((newRemaining * 100) / total).toInt() else 0
+                val formatted = formatSeconds(newRemaining)
                 _uiState.value = _uiState.value.copy(
                     remainingSeconds = newRemaining,
-                    formattedTime = formatSeconds(newRemaining),
+                    formattedTime = formatted,
                     progressPercent = progress
+                )
+
+                FocusGuardService.updateService(
+                    getApplication(),
+                    _uiState.value.presetTitle,
+                    formatted
+                )
+                ZeroDistractionGuard.setSessionActive(
+                    getApplication(),
+                    true,
+                    _uiState.value.presetTitle,
+                    formatted
                 )
 
                 // Enforce Zero Distraction Mode: check if user opened a blocked app
                 ZeroDistractionGuard.checkAndBlockForegroundApp(
                     getApplication(),
                     _uiState.value.presetTitle,
-                    _uiState.value.formattedTime
+                    formatted
                 )
             }
 
@@ -227,6 +253,9 @@ class TimerViewModel(
     }
 
     private suspend fun handleTaskFinished() {
+        FocusGuardService.stopService(getApplication())
+        ZeroDistractionGuard.setSessionActive(getApplication(), false)
+
         _uiState.value = _uiState.value.copy(
             state = TimerState.FINISHED,
             progressPercent = 0,
@@ -273,6 +302,8 @@ class TimerViewModel(
     fun pauseTimer() {
         timerJob?.cancel()
         _uiState.value = _uiState.value.copy(state = TimerState.PAUSED)
+        FocusGuardService.stopService(getApplication())
+        ZeroDistractionGuard.setSessionActive(getApplication(), false)
     }
 
     fun resetTimer() {
@@ -284,6 +315,8 @@ class TimerViewModel(
             progressPercent = 100,
             state = TimerState.IDLE
         )
+        FocusGuardService.stopService(getApplication())
+        ZeroDistractionGuard.setSessionActive(getApplication(), false)
     }
 
     fun logCurrentSession(notes: String = "") {
@@ -309,6 +342,8 @@ class TimerViewModel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+        FocusGuardService.stopService(getApplication())
+        ZeroDistractionGuard.setSessionActive(getApplication(), false)
     }
 
     class Factory(

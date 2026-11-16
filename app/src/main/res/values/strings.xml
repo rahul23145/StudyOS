@@ -63,4 +63,5 @@
     <string name="log_session">Log Completed Session</string>
     <string name="session_completed">Study Session Completed!</string>
     <string name="session_logged_success">Session recorded in study database!</string>
+    <string name="accessibility_service_desc">StudyOS Focus Guard detects when distracting apps (Instagram, YouTube, etc.) are opened during focus timer sessions and blocks them to protect your deep work. 100% offline and private.</string>
 </resources>
