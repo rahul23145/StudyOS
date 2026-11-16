@@ -58,13 +58,6 @@ class TimerFragment : Fragment() {
         observeState()
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (viewModel.uiState.value.state == TimerState.IDLE) {
-            viewModel.syncToRealTimeIfIdle()
-        }
-    }
-
     private fun setupModeToggle() {
         binding.toggleTimerMode.check(R.id.btnModeSequence)
         updateToggleButtonStyles(R.id.btnModeSequence)
@@ -309,6 +302,9 @@ class TimerFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (viewModel.uiState.value.state == TimerState.IDLE) {
+            viewModel.syncToRealTimeIfIdle()
+        }
         val ctx = context ?: return
         val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
         val hasOverlay = OverlayBlockerManager.canDrawOverlays(ctx)
