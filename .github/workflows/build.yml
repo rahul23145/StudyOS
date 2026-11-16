@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -36,14 +38,45 @@ jobs:
       - name: Build Debug APK with Gradle
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: Verify APK Generated
+      - name: Verify & Prepare Direct APK
         run: |
           echo "Listing generated APK files:"
           ls -la app/build/outputs/apk/debug/
+          cp app/build/outputs/apk/debug/app-debug.apk StudyOS.apk
+          mkdir -p release
+          cp app/build/outputs/apk/debug/app-debug.apk release/StudyOS.apk
 
-      - name: Upload Debug APK Artifact
+      - name: Upload Debug APK Artifact (Zip)
         uses: actions/upload-artifact@v4
         with:
           name: StudyOS-CAInter-Debug-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
+
+      - name: Publish Direct APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: v1.0.0
+          name: "StudyOS v1.0.0 (Direct APK)"
+          body: |
+            ### 📱 Direct APK Download (No Unzipping Required)
+            Click **StudyOS.apk** below to download directly to your phone and install without extracting!
+          draft: false
+          prerelease: false
+          files: StudyOS.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Direct APK to Repository
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add release/StudyOS.apk
+          if git diff --staged --quiet; then
+            echo "No changes in APK binary"
+          else
+            git commit -m "chore: add direct downloadable StudyOS.apk binary [skip ci]"
+            git push origin main
+          fi
