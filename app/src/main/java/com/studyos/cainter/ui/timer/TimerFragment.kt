@@ -226,14 +226,16 @@ class TimerFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val ctx = context ?: return
-        if (binding.swZeroDistraction.isChecked) {
-            val hasAcc = ZeroDistractionGuard.hasAccessibilityPermission(ctx)
-            val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
+        val isGuardEnabled = ZeroDistractionGuard.isEnabled(ctx)
+        val hasAcc = ZeroDistractionGuard.hasAccessibilityPermission(ctx)
+        val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
+
+        if (isGuardEnabled) {
             if (!hasAcc && !hasUsage) {
                 binding.swZeroDistraction.isChecked = false
                 ZeroDistractionGuard.setEnabled(ctx, false)
             } else {
-                ZeroDistractionGuard.setEnabled(ctx, true)
+                binding.swZeroDistraction.isChecked = true
             }
         }
     }
@@ -317,15 +319,6 @@ class TimerFragment : Fragment() {
                     }
                 }
             }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Refresh usage permission switch state if user just came back from Android settings
-        val context = requireContext()
-        if (ZeroDistractionGuard.isEnabled(context) && ZeroDistractionGuard.hasUsagePermission(context)) {
-            binding.swZeroDistraction.isChecked = true
         }
     }
 
