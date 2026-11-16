@@ -41,7 +41,7 @@ class ScheduleTypeAdapter(
             if (type.isActive) {
                 binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.primary)
                 binding.cardScheduleType.strokeWidth = 4
-                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.primary_light))
+                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.surface_variant_light))
             } else {
                 binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.divider_light)
                 binding.cardScheduleType.strokeWidth = 1

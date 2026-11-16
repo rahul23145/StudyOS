@@ -713,13 +713,14 @@ object DefaultScheduleProvider {
         )
     }
 
-    fun getCustomEditionSchedule(): List<ScheduleItem> {
+    fun getCustomEditionSchedule(typeId: Long = 5L): List<ScheduleItem> {
         val items = mutableListOf<ScheduleItem>()
         for (day in 1..7) {
             var order = 1
             items.addAll(
                 listOf(
                     ScheduleItem(
+                        scheduleTypeId = typeId,
                         dayOfWeek = day,
                         title = "Wake Up & Morning Routine",
                         category = ScheduleCategory.WAKE.name,

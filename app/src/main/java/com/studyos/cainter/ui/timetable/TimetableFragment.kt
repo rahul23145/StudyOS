@@ -52,8 +52,8 @@ class TimetableFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = TimetableAdapter(
-            onEditClick = { item -> showEditDialog(item) },
-            onDeleteClick = { item -> confirmDelete(item) }
+            onEditClicked = { item -> showEditDialog(item) },
+            onDeleteClicked = { item -> confirmDelete(item) }
         )
         binding.rvTimetable.layoutManager = LinearLayoutManager(requireContext())
         binding.rvTimetable.adapter = adapter

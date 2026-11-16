@@ -17,11 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-data class TodayScheduleUiModel(
-    val item: ScheduleItem,
-    val isCompleted: Boolean = false
-)
-
 data class DashboardUiState(
     val dateDisplay: String = "",
     val routineLabel: String = "",
