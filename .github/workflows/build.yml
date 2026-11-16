@@ -35,19 +35,28 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Both Debug APKs with Gradle
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+      - name: Build Both Release & Debug APKs with Gradle
+        run: ./gradlew assembleRelease assembleDebug --stacktrace --no-daemon
 
       - name: Verify & Prepare Direct APKs
         run: |
           echo "Listing all generated APK files:"
           find app/build/outputs/apk/ -name "*.apk"
           
-          # Copy CA Inter edition
-          cp $(find app/build/outputs/apk/cainter/ -name "*debug.apk" | head -n 1) StudyOS-CAInter.apk
+          # Prefer signed release APKs, fallback to debug APKs
+          CA_APK=$(find app/build/outputs/apk/cainter/ -name "*release.apk" | head -n 1)
+          if [ -z "$CA_APK" ]; then
+            CA_APK=$(find app/build/outputs/apk/cainter/ -name "*.apk" | head -n 1)
+          fi
+          echo "Using CA Inter APK: $CA_APK"
+          cp "$CA_APK" StudyOS-CAInter.apk
           
-          # Copy Custom edition
-          cp $(find app/build/outputs/apk/custom/ -name "*debug.apk" | head -n 1) StudyOS-Custom.apk
+          CUSTOM_APK=$(find app/build/outputs/apk/custom/ -name "*release.apk" | head -n 1)
+          if [ -z "$CUSTOM_APK" ]; then
+            CUSTOM_APK=$(find app/build/outputs/apk/custom/ -name "*.apk" | head -n 1)
+          fi
+          echo "Using Custom APK: $CUSTOM_APK"
+          cp "$CUSTOM_APK" StudyOS-Custom.apk
           
           # Copy to release folder
           mkdir -p release
