@@ -1,6 +1,7 @@
 package com.studyos.cainter.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -30,6 +31,12 @@ interface LectureDao {
 
     @Query("UPDATE lecture_tracker SET completedLectures = CASE WHEN completedLectures > 0 THEN completedLectures - 1 ELSE 0 END WHERE subject = :subject")
     suspend fun decrementCompleted(subject: String)
+
+    @Delete
+    suspend fun deleteTracker(tracker: LectureTracker)
+
+    @Query("DELETE FROM lecture_tracker WHERE subject = :subject")
+    suspend fun deleteBySubject(subject: String)
 
     @Query("SELECT COUNT(*) FROM lecture_tracker")
     suspend fun getTrackerCount(): Int

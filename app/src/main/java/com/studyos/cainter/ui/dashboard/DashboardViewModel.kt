@@ -47,14 +47,25 @@ class DashboardViewModel(
         val todayDay = DateUtils.getTodayDayOfWeek()
         val todayDate = DateUtils.getTodayDateString()
 
-        val routineLabel = when (todayDay) {
-            1, 3, 5 -> "MWF Routine • Tuition 6:00–7:00 PM • Costing 2x + Audit 2x"
-            2, 4, 6 -> "TTSS Routine • Running 6:30–7:15 PM • Costing 2x + Audit 2x"
-            7 -> "Sunday Audit-Only Routine • Standards & Ethics Deep Dive"
-            else -> "CA Inter Mastery Routine"
-        }
-
         viewModelScope.launch {
+            val activeType = if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+                scheduleRepository.getActiveScheduleTypeSync()
+            } else null
+
+            val routineLabel = if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+                val profileName = activeType?.name ?: "Personal Routine"
+                val target = activeType?.targetDailyHours ?: 8.0f
+                "$profileName • Target ${target}h/day"
+            } else {
+                when (todayDay) {
+                    1, 3, 5 -> "MWF Routine • Tuition 6:00–7:00 PM • Costing 2x + Audit 2x"
+                    2, 4, 6 -> "TTSS Routine • Running 6:30–7:15 PM • Costing 2x + Audit 2x"
+                    7 -> "Sunday Audit-Only Routine • Standards & Ethics Deep Dive"
+                    else -> "CA Inter Mastery Routine"
+                }
+            }
+
+            val targetHours = activeType?.targetDailyHours ?: 8.0f
             val streak = scheduleRepository.calculateStreak()
 
             combine(
@@ -81,7 +92,7 @@ class DashboardViewModel(
                 val costing = trackers.firstOrNull { it.subject == "COSTING" }
                 val audit = trackers.firstOrNull { it.subject == "AUDIT" }
 
-                val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = 8.0f)
+                val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = targetHours)
 
                 DashboardUiState(
                     dateDisplay = DateUtils.getFormattedDisplayDate(),

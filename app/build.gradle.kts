@@ -28,12 +28,14 @@ android {
             applicationId = "com.studyos.cainter"
             versionName = "1.0.0-cainter"
             manifestPlaceholders["appName"] = "StudyOS - CA Inter"
+            buildConfigField("boolean", "IS_CUSTOM_APP", "false")
         }
         create("custom") {
             dimension = "edition"
             applicationId = "com.studyos.custom"
             versionName = "1.0.0-custom"
             manifestPlaceholders["appName"] = "StudyOS - Custom Routine"
+            buildConfigField("boolean", "IS_CUSTOM_APP", "true")
         }
     }
 
@@ -62,6 +64,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

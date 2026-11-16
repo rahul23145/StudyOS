@@ -25,16 +25,19 @@ class LecturesViewModel(
         }
     }
 
-    fun incrementLecture(subject: String) {
+    fun incrementLecture(subject: String, duration: Int = 60) {
         viewModelScope.launch {
             repository.incrementLecture(subject)
-            // Also log to study sessions automatically
-            val duration = if (subject == "COSTING") 138 else 90
+            val sessionDuration = when (subject) {
+                "COSTING" -> 138
+                "AUDIT" -> 90
+                else -> duration
+            }
             repository.logSession(
                 subject = subject,
                 category = subject,
-                durationMinutes = duration,
-                notes = "Completed $subject lecture via lecture tracker"
+                durationMinutes = sessionDuration,
+                notes = "Completed $subject session"
             )
         }
     }
@@ -42,6 +45,27 @@ class LecturesViewModel(
     fun decrementLecture(subject: String) {
         viewModelScope.launch {
             repository.decrementLecture(subject)
+        }
+    }
+
+    fun addSubject(name: String, total: Int, duration: Int, dailyTarget: Int) {
+        viewModelScope.launch {
+            val key = "SUBJ_" + System.currentTimeMillis()
+            val tracker = LectureTracker(
+                subject = key,
+                displayName = name,
+                totalLectures = total,
+                completedLectures = 0,
+                dailyTarget = dailyTarget,
+                lectureDurationMinutes = duration
+            )
+            repository.addOrUpdateSubject(tracker)
+        }
+    }
+
+    fun deleteSubject(subject: String) {
+        viewModelScope.launch {
+            repository.deleteSubject(subject)
         }
     }
 

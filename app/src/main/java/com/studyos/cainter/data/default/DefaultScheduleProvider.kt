@@ -684,6 +684,178 @@ object DefaultScheduleProvider {
         )
     }
 
+    fun getCustomEditionTrackers(): List<LectureTracker> {
+        return listOf(
+            LectureTracker(
+                subject = "CORE_SUBJECT_1",
+                displayName = "Core Subject 1 (Theory / Concepts)",
+                totalLectures = 50,
+                completedLectures = 0,
+                dailyTarget = 2,
+                lectureDurationMinutes = 60
+            ),
+            LectureTracker(
+                subject = "CORE_SUBJECT_2",
+                displayName = "Core Subject 2 (Practical / Problems)",
+                totalLectures = 40,
+                completedLectures = 0,
+                dailyTarget = 1,
+                lectureDurationMinutes = 90
+            ),
+            LectureTracker(
+                subject = "SKILL_PRACTICE",
+                displayName = "Skill Practice & Revision",
+                totalLectures = 30,
+                completedLectures = 0,
+                dailyTarget = 1,
+                lectureDurationMinutes = 60
+            )
+        )
+    }
+
+    fun getCustomEditionSchedule(): List<ScheduleItem> {
+        val items = mutableListOf<ScheduleItem>()
+        for (day in 1..7) {
+            var order = 1
+            items.addAll(
+                listOf(
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Wake Up & Morning Routine",
+                        category = ScheduleCategory.WAKE.name,
+                        startTime = "06:30",
+                        endTime = "07:00",
+                        durationMinutes = 30,
+                        notes = "Hydrate & plan the day",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Exercise / Workout",
+                        category = ScheduleCategory.GYM.name,
+                        startTime = "07:00",
+                        endTime = "08:00",
+                        durationMinutes = 60,
+                        notes = "Physical training / cardio",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Breakfast & Setup",
+                        category = ScheduleCategory.BREAK.name,
+                        startTime = "08:00",
+                        endTime = "08:30",
+                        durationMinutes = 30,
+                        notes = "Breakfast & desk prep",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "2-Hour Deep Focus Block 1",
+                        category = ScheduleCategory.STUDY_BLOCK.name,
+                        startTime = "08:30",
+                        endTime = "10:30",
+                        durationMinutes = 120,
+                        notes = "Uninterrupted deep work on highest priority subject",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Rest & Stretch Break",
+                        category = ScheduleCategory.BREAK.name,
+                        startTime = "10:30",
+                        endTime = "10:45",
+                        durationMinutes = 15,
+                        notes = "Rest eyes, hydrate",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "2-Hour Deep Focus Block 2",
+                        category = ScheduleCategory.STUDY_BLOCK.name,
+                        startTime = "10:45",
+                        endTime = "12:45",
+                        durationMinutes = 120,
+                        notes = "Core subject session 2 / Problem solving",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Lunch & Relaxation",
+                        category = ScheduleCategory.LUNCH.name,
+                        startTime = "13:00",
+                        endTime = "14:15",
+                        durationMinutes = 75,
+                        notes = "Nutritious lunch and rest",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Afternoon Study & Practice Block",
+                        category = ScheduleCategory.STUDY_BLOCK.name,
+                        startTime = "14:30",
+                        endTime = "16:30",
+                        durationMinutes = 120,
+                        notes = "Active practice & question solving",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Evening Tea & Walk",
+                        category = ScheduleCategory.BREAK.name,
+                        startTime = "16:30",
+                        endTime = "17:15",
+                        durationMinutes = 45,
+                        notes = "Outdoor walk or refresh",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Targeted Revision / Skill Work",
+                        category = ScheduleCategory.STUDY_BLOCK.name,
+                        startTime = "17:30",
+                        endTime = "19:00",
+                        durationMinutes = 90,
+                        notes = "Flashcards, review, or projects",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Dinner & Wind Down",
+                        category = ScheduleCategory.LUNCH.name,
+                        startTime = "19:30",
+                        endTime = "20:30",
+                        durationMinutes = 60,
+                        notes = "Dinner and relaxation",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Evening Review & Next Day Plan",
+                        category = ScheduleCategory.BREAK.name,
+                        startTime = "21:00",
+                        endTime = "22:15",
+                        durationMinutes = 75,
+                        notes = "Review daily checklist and prepare schedule for tomorrow",
+                        sortOrder = order++
+                    ),
+                    ScheduleItem(
+                        dayOfWeek = day,
+                        title = "Sleep",
+                        category = ScheduleCategory.SLEEP.name,
+                        startTime = "23:00",
+                        endTime = "06:30",
+                        durationMinutes = 450,
+                        notes = "Sleep at 11:00 PM for 7.5 hours rest",
+                        sortOrder = order++
+                    )
+                )
+            )
+        }
+        return items
+    }
+    }
+
     fun getDefaultScheduleTypes(): List<com.studyos.cainter.data.local.entity.ScheduleType> {
         return listOf(
             com.studyos.cainter.data.local.entity.ScheduleType(

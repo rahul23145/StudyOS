@@ -3,6 +3,7 @@ package com.studyos.cainter.ui
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.R
 import com.studyos.cainter.databinding.ActivityMainBinding
 import com.studyos.cainter.ui.analytics.AnalyticsFragment
@@ -26,6 +27,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (BuildConfig.IS_CUSTOM_APP) {
+            binding.topAppBar.title = "StudyOS - Custom"
+            binding.topAppBar.subtitle = "Personal Schedule & Routine Builder"
+            binding.bottomNavigation.menu.findItem(R.id.navigation_lectures)?.title = "Subjects"
+        } else {
+            binding.topAppBar.title = "StudyOS - CA Inter"
+            binding.topAppBar.subtitle = "CA Intermediate Preparation"
+            binding.bottomNavigation.menu.findItem(R.id.navigation_lectures)?.title = "Lectures"
+        }
+
         setupBottomNavigation()
 
         if (savedInstanceState == null) {
@@ -38,32 +49,42 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_dashboard -> {
                     switchFragment(dashboardFragment, "Dashboard")
-                    binding.topAppBar.title = getString(R.string.app_name)
-                    binding.topAppBar.subtitle = getString(R.string.app_tagline)
+                    if (BuildConfig.IS_CUSTOM_APP) {
+                        binding.topAppBar.title = "StudyOS - Custom"
+                        binding.topAppBar.subtitle = "Personal Schedule & Routine Builder"
+                    } else {
+                        binding.topAppBar.title = "StudyOS - CA Inter"
+                        binding.topAppBar.subtitle = "CA Intermediate Preparation"
+                    }
                     true
                 }
                 R.id.navigation_timetable -> {
                     switchFragment(timetableFragment, "Timetable")
                     binding.topAppBar.title = "Weekly Timetable"
-                    binding.topAppBar.subtitle = "Editable Routine & Study Blocks"
+                    binding.topAppBar.subtitle = if (BuildConfig.IS_CUSTOM_APP) "Custom Routine & Time Blocks" else "CA Inter Routine & Study Blocks"
                     true
                 }
                 R.id.navigation_lectures -> {
                     switchFragment(lecturesFragment, "Lectures")
-                    binding.topAppBar.title = "Lecture Tracker"
-                    binding.topAppBar.subtitle = "Costing & Auditing Progress"
+                    if (BuildConfig.IS_CUSTOM_APP) {
+                        binding.topAppBar.title = "My Subjects & Targets"
+                        binding.topAppBar.subtitle = "Custom Courses, Chapters & Milestones"
+                    } else {
+                        binding.topAppBar.title = "Lecture Tracker"
+                        binding.topAppBar.subtitle = "Costing & Auditing Progress"
+                    }
                     true
                 }
                 R.id.navigation_timer -> {
                     switchFragment(timerFragment, "Timer")
                     binding.topAppBar.title = "Study Timer"
-                    binding.topAppBar.subtitle = "2h Blocks & Presets"
+                    binding.topAppBar.subtitle = "Focus Blocks & Presets"
                     true
                 }
                 R.id.navigation_analytics -> {
                     switchFragment(analyticsFragment, "Analytics")
                     binding.topAppBar.title = "Progress & Habits"
-                    binding.topAppBar.subtitle = "Offline Completion Metrics"
+                    binding.topAppBar.subtitle = "7-Day Study Hours Graph & Consistency"
                     true
                 }
                 else -> false

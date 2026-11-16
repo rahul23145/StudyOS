@@ -67,10 +67,20 @@ abstract class AppDatabase : RoomDatabase() {
 
             suspend fun populateDatabase(db: AppDatabase) {
                 if (db.scheduleDao().getScheduleCount() == 0) {
-                    db.scheduleDao().insertAll(DefaultScheduleProvider.getDefaultSchedule())
+                    val schedule = if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+                        DefaultScheduleProvider.getCustomEditionSchedule()
+                    } else {
+                        DefaultScheduleProvider.getDefaultSchedule()
+                    }
+                    db.scheduleDao().insertAll(schedule)
                 }
                 if (db.lectureDao().getTrackerCount() == 0) {
-                    db.lectureDao().insertAll(DefaultScheduleProvider.getDefaultTrackers())
+                    val trackers = if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+                        DefaultScheduleProvider.getCustomEditionTrackers()
+                    } else {
+                        DefaultScheduleProvider.getDefaultTrackers()
+                    }
+                    db.lectureDao().insertAll(trackers)
                 }
                 if (db.scheduleTypeDao().getScheduleTypeCount() == 0) {
                     db.scheduleTypeDao().insertAll(DefaultScheduleProvider.getDefaultScheduleTypes())

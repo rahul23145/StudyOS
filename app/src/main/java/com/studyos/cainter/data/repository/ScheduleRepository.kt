@@ -69,6 +69,10 @@ class ScheduleRepository(
         return scheduleTypeDao.getActiveScheduleType()
     }
 
+    suspend fun getActiveScheduleTypeSync(): ScheduleType? {
+        return scheduleTypeDao.getActiveScheduleTypeSync()
+    }
+
     suspend fun createScheduleType(scheduleType: ScheduleType): Long {
         return scheduleTypeDao.insert(scheduleType)
     }

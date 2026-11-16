@@ -33,6 +33,14 @@ class StudyRepository(
         lectureDao.insertOrUpdate(tracker)
     }
 
+    suspend fun addOrUpdateSubject(tracker: LectureTracker) {
+        lectureDao.insertOrUpdate(tracker)
+    }
+
+    suspend fun deleteSubject(subject: String) {
+        lectureDao.deleteBySubject(subject)
+    }
+
     suspend fun logSession(
         subject: String,
         category: String,

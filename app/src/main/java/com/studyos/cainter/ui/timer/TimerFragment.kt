@@ -44,25 +44,25 @@ class TimerFragment : Fragment() {
     }
 
     private fun setupPresets() {
-        // 2-hour Study Block
-        binding.btnPresetStudyBlock.setOnClickListener {
-            viewModel.setPreset("2h Study Block", 120)
-        }
-        // Costing (2h 18m = 138m)
-        binding.btnPresetCosting.setOnClickListener {
-            viewModel.setPreset("Costing Lecture (2h 18m)", 138)
-        }
-        // Audit (1h 30m = 90m)
-        binding.btnPresetAudit.setOnClickListener {
-            viewModel.setPreset("Audit Lecture (1h 30m)", 90)
-        }
-        // Break (15m)
-        binding.btnPresetBreak.setOnClickListener {
-            viewModel.setPreset("15m Break", 15)
-        }
-        // Tuition (60m)
-        binding.btnPresetTuition.setOnClickListener {
-            viewModel.setPreset("Tuition Class (60m)", 60)
+        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+            binding.btnPresetStudyBlock.text = "2h Study Block"
+            binding.btnPresetCosting.text = "50m Focus"
+            binding.btnPresetAudit.text = "90m Deep Work"
+            binding.btnPresetTuition.text = "25m Pomodoro"
+            binding.btnPresetBreak.text = "15m Break"
+
+            binding.btnPresetStudyBlock.setOnClickListener { viewModel.setPreset("2h Study Block", 120) }
+            binding.btnPresetCosting.setOnClickListener { viewModel.setPreset("50m Focus Session", 50) }
+            binding.btnPresetAudit.setOnClickListener { viewModel.setPreset("90m Deep Work Block", 90) }
+            binding.btnPresetTuition.setOnClickListener { viewModel.setPreset("25m Pomodoro", 25) }
+            binding.btnPresetBreak.setOnClickListener { viewModel.setPreset("15m Break", 15) }
+        } else {
+            // Rahul's CA Inter Presets
+            binding.btnPresetStudyBlock.setOnClickListener { viewModel.setPreset("2h Study Block", 120) }
+            binding.btnPresetCosting.setOnClickListener { viewModel.setPreset("Costing Lecture (2h 18m)", 138) }
+            binding.btnPresetAudit.setOnClickListener { viewModel.setPreset("Audit Lecture (1h 30m)", 90) }
+            binding.btnPresetBreak.setOnClickListener { viewModel.setPreset("15m Break", 15) }
+            binding.btnPresetTuition.setOnClickListener { viewModel.setPreset("Tuition Class (60m)", 60) }
         }
     }
 

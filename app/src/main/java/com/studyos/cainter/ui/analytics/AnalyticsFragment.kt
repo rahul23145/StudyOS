@@ -39,6 +39,10 @@ class AnalyticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+            binding.cardCaInterAdherence.visibility = View.GONE
+        }
+
         setupRecyclerView()
         observeData()
     }

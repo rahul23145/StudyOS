@@ -72,14 +72,24 @@ class DashboardFragment : Fragment() {
 
                     binding.tvTasksCompletedCount.text = "${state.completedCount}/${state.totalCount} Done"
 
-                    // Costing stats
-                    val costingToday = state.costingTracker?.completedLectures ?: 0
-                    val costingTarget = state.costingTracker?.dailyTarget ?: 2
-                    binding.tvCostingDone.text = "$costingToday / ${state.costingTracker?.totalLectures ?: 85}"
+                    if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+                        binding.tvCostingDone.text = "${state.completedCount}"
+                        (binding.tvCostingDone.parent as? android.view.ViewGroup)?.let { group ->
+                            (group.getChildAt(1) as? android.widget.TextView)?.text = "Tasks Done"
+                        }
+                        binding.tvAuditDone.text = "${(state.totalCount - state.completedCount).coerceAtLeast(0)}"
+                        (binding.tvAuditDone.parent as? android.view.ViewGroup)?.let { group ->
+                            (group.getChildAt(1) as? android.widget.TextView)?.text = "Remaining"
+                        }
+                    } else {
+                        // Costing stats
+                        val costingToday = state.costingTracker?.completedLectures ?: 0
+                        binding.tvCostingDone.text = "$costingToday / ${state.costingTracker?.totalLectures ?: 85}"
 
-                    // Audit stats
-                    val auditToday = state.auditTracker?.completedLectures ?: 0
-                    binding.tvAuditDone.text = "$auditToday / ${state.auditTracker?.totalLectures ?: 65}"
+                        // Audit stats
+                        val auditToday = state.auditTracker?.completedLectures ?: 0
+                        binding.tvAuditDone.text = "$auditToday / ${state.auditTracker?.totalLectures ?: 65}"
+                    }
 
                     // Study time & graph
                     binding.tvStudyHoursLogged.text = DateUtils.formatMinutesToHoursAndMinutes(state.studyMinutesToday)
