@@ -93,6 +93,13 @@ class DashboardFragment : Fragment() {
 
                     // Study time & graph
                     binding.tvStudyHoursLogged.text = DateUtils.formatMinutesToHoursAndMinutes(state.studyMinutesToday)
+
+                    val totalAllTimeHours = state.totalStudyMinutesAllTime / 60
+                    val totalAllTimeMins = state.totalStudyMinutesAllTime % 60
+                    val totalTimeFormatted = if (totalAllTimeHours > 0) "${totalAllTimeHours}h ${totalAllTimeMins}m" else "${totalAllTimeMins}m"
+                    binding.tvTotalStudyHoursAllTime.text = totalTimeFormatted
+                    binding.chipTotalHours.text = "$totalTimeFormatted Total"
+
                     binding.dashboardChart.setData(state.chartData)
 
                     // Current Focus Card

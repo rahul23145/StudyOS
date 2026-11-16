@@ -26,4 +26,10 @@ interface StudySessionDao {
 
     @Query("SELECT DISTINCT strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch', 'localtime') FROM study_sessions WHERE durationMinutes >= 5")
     suspend fun getAllStudyDates(): List<String>
+
+    @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions")
+    fun getAllTimeStudyMinutes(): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions")
+    suspend fun getAllTimeStudyMinutesSync(): Int
 }

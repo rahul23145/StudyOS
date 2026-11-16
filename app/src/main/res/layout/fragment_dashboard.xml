@@ -46,15 +46,32 @@
                     tools:text="MWF Routine • Tuition 6–7 PM • Costing 2x + Audit 2x" />
             </LinearLayout>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipStreak"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1 Day Streak"
-                android:textColor="@color/primary"
-                app:chipBackgroundColor="@color/accent_amber_light"
-                app:chipIcon="@drawable/ic_analytics"
-                app:chipIconTint="@color/accent_amber" />
+                android:orientation="horizontal">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipStreak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 Day Streak"
+                    android:textColor="@color/primary"
+                    android:layout_marginEnd="6dp"
+                    app:chipBackgroundColor="@color/accent_amber_light"
+                    app:chipIcon="@drawable/ic_analytics"
+                    app:chipIconTint="@color/accent_amber" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTotalHours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0h Total"
+                    android:textColor="@color/secondary"
+                    app:chipBackgroundColor="@color/surface_variant_light"
+                    app:chipIcon="@drawable/ic_timer"
+                    app:chipIconTint="@color/secondary" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Daily Progress Summary Card -->
@@ -115,7 +132,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:weightSum="3">
+                    android:weightSum="4">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -129,14 +146,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/category_costing"
-                            android:textSize="17sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="1 / 2" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Costing (2h18m)"
+                            android:text="Costing"
                             android:textColor="@color/text_secondary_light"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -153,14 +170,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/category_audit"
-                            android:textSize="17sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="2 / 2" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Audit (1h30m)"
+                            android:text="Audit"
                             android:textColor="@color/text_secondary_light"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -177,14 +194,38 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/accent_emerald"
-                            android:textSize="17sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="6h 40m" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Time Studied"
+                            android:text="Today"
+                            android:textColor="@color/text_secondary_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvTotalStudyHoursAllTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="148h" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="All-Time Total"
                             android:textColor="@color/text_secondary_light"
                             android:textSize="11sp" />
                     </LinearLayout>

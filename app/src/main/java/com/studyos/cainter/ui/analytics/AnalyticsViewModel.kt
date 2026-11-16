@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 data class AnalyticsUiState(
     val todayMinutes: Int = 0,
     val weekMinutes: Int = 0,
+    val totalAllTimeMinutes: Int = 0,
     val streak: Int = 0,
     val chartData: List<DayStudyData> = emptyList(),
     val recentSessions: List<StudySession> = emptyList()
@@ -35,17 +36,18 @@ class AnalyticsViewModel(
 
     fun loadData() {
         viewModelScope.launch {
-            val streak = scheduleRepository.calculateStreak()
-
             combine(
                 studyRepository.getTodayStudyMinutes(),
                 studyRepository.getWeekStudyMinutes(),
+                studyRepository.getAllTimeStudyMinutes(),
                 studyRepository.getRecentSessions()
-            ) { todayMins, weekMins, sessions ->
+            ) { todayMins, weekMins, allTimeMins, sessions ->
+                val streak = scheduleRepository.calculateStreak()
                 val chart = studyRepository.getWeeklyChartData(targetHoursPerDay = 8.0f)
                 AnalyticsUiState(
                     todayMinutes = todayMins,
                     weekMinutes = weekMins,
+                    totalAllTimeMinutes = allTimeMins,
                     streak = streak,
                     chartData = chart,
                     recentSessions = sessions.take(15)

@@ -30,6 +30,7 @@ data class DashboardUiState(
     val costingTracker: LectureTracker? = null,
     val auditTracker: LectureTracker? = null,
     val studyMinutesToday: Int = 0,
+    val totalStudyMinutesAllTime: Int = 0,
     val chartData: List<DayStudyData> = emptyList()
 )
 
@@ -72,8 +73,9 @@ class DashboardViewModel(
                     scheduleRepository.getScheduleForDay(todayDay, typeId),
                     scheduleRepository.getCompletionsForDate(todayDate),
                     studyRepository.getAllLectureTrackers(),
-                    studyRepository.getTodayStudyMinutes()
-                ) { scheduleItems, completions, trackers, minutesToday ->
+                    studyRepository.getTodayStudyMinutes(),
+                    studyRepository.getAllTimeStudyMinutes()
+                ) { scheduleItems, completions, trackers, minutesToday, minutesAllTime ->
                     val completedMap = completions.associate { it.scheduleItemId to it.isCompleted }
                     val uiModels = scheduleItems.map { item ->
                         TodayScheduleUiModel(
@@ -109,6 +111,7 @@ class DashboardViewModel(
                         costingTracker = costing,
                         auditTracker = audit,
                         studyMinutesToday = minutesToday,
+                        totalStudyMinutesAllTime = minutesAllTime,
                         chartData = chart
                     )
                 }

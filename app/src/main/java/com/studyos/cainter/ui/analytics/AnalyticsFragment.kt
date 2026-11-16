@@ -59,6 +59,7 @@ class AnalyticsFragment : Fragment() {
                 viewModel.uiState.collect { state ->
                     binding.tvAnalyticsTodayMinutes.text = DateUtils.formatMinutesToHoursAndMinutes(state.todayMinutes)
                     binding.tvAnalyticsWeekMinutes.text = DateUtils.formatMinutesToHoursAndMinutes(state.weekMinutes)
+                    binding.tvAnalyticsTotalMinutes.text = DateUtils.formatMinutesToHoursAndMinutes(state.totalAllTimeMinutes)
                     binding.chartWeeklyStudy.setData(state.chartData)
                     adapter.submitList(state.recentSessions)
                 }

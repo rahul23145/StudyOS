@@ -75,6 +75,14 @@ class StudyRepository(
         return sessionDao.getTotalMinutesSince(startOfWeek)
     }
 
+    fun getAllTimeStudyMinutes(): Flow<Int> {
+        return sessionDao.getAllTimeStudyMinutes()
+    }
+
+    suspend fun getAllTimeStudyMinutesSync(): Int {
+        return sessionDao.getAllTimeStudyMinutesSync()
+    }
+
     suspend fun getWeeklyChartData(targetHoursPerDay: Float = 8.0f): List<DayStudyData> {
         val today = LocalDate.now()
         val zone = ZoneId.systemDefault()
