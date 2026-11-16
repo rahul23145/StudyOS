@@ -12,8 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.InputStream
-import java.io.OutputStream
 
 object BackupManager {
 
@@ -48,6 +46,7 @@ object BackupManager {
             obj.put("durationMinutes", item.durationMinutes)
             obj.put("notes", item.notes)
             obj.put("sortOrder", item.sortOrder)
+            obj.put("isCustom", item.isCustom)
             schedArr.put(obj)
         }
         root.put("schedules", schedArr)
@@ -69,13 +68,13 @@ object BackupManager {
         val lecArr = JSONArray()
         for (lec in lectures) {
             val obj = JSONObject()
-            obj.put("id", lec.id)
             obj.put("subject", lec.subject)
+            obj.put("displayName", lec.displayName)
             obj.put("totalLectures", lec.totalLectures)
             obj.put("completedLectures", lec.completedLectures)
-            obj.put("targetDate", lec.targetDate)
-            obj.put("totalChapters", lec.totalChapters)
-            obj.put("completedChapters", lec.completedChapters)
+            obj.put("dailyTarget", lec.dailyTarget)
+            obj.put("lectureDurationMinutes", lec.lectureDurationMinutes)
+            obj.put("lastUpdatedDate", lec.lastUpdatedDate)
             lecArr.put(obj)
         }
         root.put("lectures", lecArr)
@@ -85,10 +84,10 @@ object BackupManager {
         for (sess in sessions) {
             val obj = JSONObject()
             obj.put("id", sess.id)
-            obj.put("timestamp", sess.timestamp)
-            obj.put("durationMinutes", sess.durationMinutes)
             obj.put("subject", sess.subject)
             obj.put("category", sess.category)
+            obj.put("durationMinutes", sess.durationMinutes)
+            obj.put("timestamp", sess.timestamp)
             obj.put("notes", sess.notes)
             sessArr.put(obj)
         }
@@ -101,8 +100,10 @@ object BackupManager {
             obj.put("id", type.id)
             obj.put("name", type.name)
             obj.put("description", type.description)
+            obj.put("targetDailyHours", type.targetDailyHours.toDouble())
+            obj.put("wakeTime", type.wakeTime)
+            obj.put("sleepTime", type.sleepTime)
             obj.put("isActive", type.isActive)
-            obj.put("isDefault", type.isDefault)
             typesArr.put(obj)
         }
         root.put("scheduleTypes", typesArr)
@@ -145,8 +146,10 @@ object BackupManager {
                         id = o.optLong("id", 0L),
                         name = o.getString("name"),
                         description = o.optString("description", ""),
-                        isActive = o.optBoolean("isActive", false),
-                        isDefault = o.optBoolean("isDefault", false)
+                        targetDailyHours = o.optDouble("targetDailyHours", 8.0).toFloat(),
+                        wakeTime = o.optString("wakeTime", "07:00"),
+                        sleepTime = o.optString("sleepTime", "23:30"),
+                        isActive = o.optBoolean("isActive", false)
                     )
                 )
             }
@@ -173,7 +176,8 @@ object BackupManager {
                         endTime = o.getString("endTime"),
                         durationMinutes = o.getInt("durationMinutes"),
                         notes = o.optString("notes", ""),
-                        sortOrder = o.optInt("sortOrder", 0)
+                        sortOrder = o.optInt("sortOrder", 0),
+                        isCustom = o.optBoolean("isCustom", false)
                     )
                 )
             }
@@ -192,13 +196,13 @@ object BackupManager {
                 val o = arr.getJSONObject(i)
                 list.add(
                     LectureTracker(
-                        id = o.optLong("id", 0L),
                         subject = o.getString("subject"),
+                        displayName = o.optString("displayName", o.getString("subject")),
                         totalLectures = o.getInt("totalLectures"),
                         completedLectures = o.getInt("completedLectures"),
-                        targetDate = o.optString("targetDate", "2027-05-01"),
-                        totalChapters = o.optInt("totalChapters", 10),
-                        completedChapters = o.optInt("completedChapters", 0)
+                        dailyTarget = o.optInt("dailyTarget", 2),
+                        lectureDurationMinutes = o.optInt("lectureDurationMinutes", 90),
+                        lastUpdatedDate = o.optString("lastUpdatedDate", "")
                     )
                 )
             }
@@ -239,10 +243,10 @@ object BackupManager {
                 list.add(
                     StudySession(
                         id = o.optLong("id", 0L),
-                        timestamp = o.getLong("timestamp"),
-                        durationMinutes = o.getInt("durationMinutes"),
                         subject = o.getString("subject"),
                         category = o.getString("category"),
+                        durationMinutes = o.getInt("durationMinutes"),
+                        timestamp = o.getLong("timestamp"),
                         notes = o.optString("notes", "")
                     )
                 )
