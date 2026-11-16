@@ -8,23 +8,30 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.view.ContextThemeWrapper
 import com.studyos.cainter.R
 import com.studyos.cainter.ui.MainActivity
 
 object OverlayBlockerManager {
+    private const val TAG = "OverlayBlockerManager"
     private var overlayView: View? = null
     private var isOverlayShowing = false
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun canDrawOverlays(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(context)
+            try {
+                Settings.canDrawOverlays(context)
+            } catch (e: Exception) {
+                false
+            }
         } else {
             true
         }
@@ -79,9 +86,8 @@ object OverlayBlockerManager {
 
     fun isMiuiDevice(): Boolean {
         return try {
-            Build.MANUFACTURER.contains("Xiaomi", ignoreCase = true) ||
-                    Build.MANUFACTURER.contains("Redmi", ignoreCase = true) ||
-                    Build.MANUFACTURER.contains("Poco", ignoreCase = true)
+            val manufacturer = Build.MANUFACTURER.lowercase()
+            manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains("poco")
         } catch (e: Exception) {
             false
         }
@@ -93,7 +99,10 @@ object OverlayBlockerManager {
         taskTitle: String,
         remainingTime: String
     ) {
-        if (!canDrawOverlays(context)) return
+        if (!canDrawOverlays(context)) {
+            Log.w(TAG, "Cannot show overlay: SYSTEM_ALERT_WINDOW permission not granted")
+            return
+        }
 
         mainHandler.post {
             if (isOverlayShowing && overlayView != null) {
@@ -103,7 +112,8 @@ object OverlayBlockerManager {
 
             try {
                 val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager ?: return@post
-                val inflater = LayoutInflater.from(context)
+                val themedContext = ContextThemeWrapper(context, R.style.Theme_StudyOS)
+                val inflater = LayoutInflater.from(themedContext)
                 val view = inflater.inflate(R.layout.overlay_blocked_app, null)
 
                 view.findViewById<TextView>(R.id.tvBlockedAppBanner)?.text = "$blockedAppName is blocked!"
@@ -123,7 +133,7 @@ object OverlayBlockerManager {
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 } else {
                     @Suppress("DEPRECATION")
-                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+                    WindowManager.LayoutParams.TYPE_PHONE
                 }
 
                 val params = WindowManager.LayoutParams(
@@ -132,8 +142,7 @@ object OverlayBlockerManager {
                     layoutType,
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN or
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     PixelFormat.TRANSLUCENT
                 ).apply {
                     gravity = Gravity.CENTER
@@ -142,8 +151,9 @@ object OverlayBlockerManager {
                 windowManager.addView(view, params)
                 overlayView = view
                 isOverlayShowing = true
+                Log.d(TAG, "Overlay successfully added to WindowManager")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Failed to add overlay view", e)
             }
         }
     }
@@ -164,8 +174,9 @@ object OverlayBlockerManager {
             try {
                 val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
                 windowManager?.removeView(overlayView)
+                Log.d(TAG, "Overlay removed from WindowManager")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Failed to remove overlay view", e)
             } finally {
                 overlayView = null
                 isOverlayShowing = false

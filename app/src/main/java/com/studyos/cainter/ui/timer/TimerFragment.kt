@@ -175,25 +175,28 @@ class TimerFragment : Fragment() {
 
     private fun setupZeroDistractionMode() {
         val context = requireContext()
-        binding.swZeroDistraction.isChecked = ZeroDistractionGuard.isEnabled(context)
+        updatePermissionBadgeAndSwitch()
 
         binding.swZeroDistraction.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 if (!ZeroDistractionGuard.hasUsagePermission(context)) {
+                    binding.swZeroDistraction.isChecked = false
                     showUsagePermissionDialog()
                 } else if (!OverlayBlockerManager.canDrawOverlays(context)) {
+                    binding.swZeroDistraction.isChecked = false
                     showOverlayPermissionDialog()
                 } else {
                     ZeroDistractionGuard.setEnabled(context, true)
                     val activeTitle = viewModel.uiState.value.presetTitle
                     val activeRemaining = viewModel.uiState.value.formattedTime
                     FocusGuardService.startService(context, activeTitle, activeRemaining)
-                    val toastMsg = if (OverlayBlockerManager.isMiuiDevice()) {
-                        "🛡️ Zero Distraction Mode Active!\n(Xiaomi: Allow 'Display pop-up windows in background' in permissions)"
+                    updatePermissionBadgeAndSwitch()
+
+                    if (OverlayBlockerManager.isMiuiDevice()) {
+                        showMiuiTipsDialog()
                     } else {
-                        "🛡️ Zero Distraction Mode Activated!"
+                        Toast.makeText(context, "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
                     }
-                    Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
                 }
             } else {
                 ZeroDistractionGuard.setEnabled(context, false)
@@ -201,13 +204,67 @@ class TimerFragment : Fragment() {
                 if (viewModel.uiState.value.state != TimerState.RUNNING) {
                     FocusGuardService.stopService(context)
                 }
+                updatePermissionBadgeAndSwitch()
                 Toast.makeText(context, "Zero Distraction Mode Deactivated", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.tvGuardPermissionStatus.setOnClickListener {
+            val hasUsage = ZeroDistractionGuard.hasUsagePermission(requireContext())
+            val hasOverlay = OverlayBlockerManager.canDrawOverlays(requireContext())
+            if (!hasUsage) {
+                showUsagePermissionDialog()
+            } else if (!hasOverlay) {
+                showOverlayPermissionDialog()
+            } else if (OverlayBlockerManager.isMiuiDevice()) {
+                showMiuiTipsDialog()
+            } else {
+                Toast.makeText(requireContext(), "All permissions granted! Blocker is fully active.", Toast.LENGTH_SHORT).show()
             }
         }
 
         binding.btnConfigureDistractions.setOnClickListener {
             ConfigureDistractionsDialog.newInstance().show(parentFragmentManager, "ConfigureDistractions")
         }
+    }
+
+    private fun updatePermissionBadgeAndSwitch() {
+        val ctx = context ?: return
+        val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
+        val hasOverlay = OverlayBlockerManager.canDrawOverlays(ctx)
+        val isEnabled = ZeroDistractionGuard.isEnabled(ctx)
+
+        if (!hasUsage && !hasOverlay) {
+            binding.tvGuardPermissionStatus.text = "⚠️ Setup Needed: Tap to grant Usage & Overlay Access"
+            binding.tvGuardPermissionStatus.setTextColor(requireContext().getColor(R.color.accent_rose))
+        } else if (!hasUsage) {
+            binding.tvGuardPermissionStatus.text = "⚠️ Setup Needed: Tap to grant Usage Access"
+            binding.tvGuardPermissionStatus.setTextColor(requireContext().getColor(R.color.accent_amber))
+        } else if (!hasOverlay) {
+            binding.tvGuardPermissionStatus.text = "⚠️ Setup Needed: Tap to grant Display Over Other Apps"
+            binding.tvGuardPermissionStatus.setTextColor(requireContext().getColor(R.color.accent_amber))
+        } else if (isEnabled) {
+            binding.tvGuardPermissionStatus.text = "🟢 Zero Distraction Active • Distracting apps blocked"
+            binding.tvGuardPermissionStatus.setTextColor(requireContext().getColor(R.color.accent_emerald))
+        } else {
+            binding.tvGuardPermissionStatus.text = "⚪ Ready • Toggle switch above to activate"
+            binding.tvGuardPermissionStatus.setTextColor(requireContext().getColor(R.color.text_secondary_light))
+        }
+
+        if (binding.swZeroDistraction.isChecked != (isEnabled && hasUsage && hasOverlay)) {
+            binding.swZeroDistraction.isChecked = isEnabled && hasUsage && hasOverlay
+        }
+    }
+
+    private fun showMiuiTipsDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("📱 Xiaomi / MIUI Setting")
+            .setMessage("On Xiaomi/Redmi devices, please ensure:\n\n1. 'Display pop-up windows in background' is set to Allow.\n2. 'Battery Saver' is set to No restrictions so StudyOS can guard your study uninterrupted.")
+            .setPositiveButton("Open MIUI Permissions") { _, _ ->
+                OverlayBlockerManager.openMiuiPermissions(requireContext())
+            }
+            .setNegativeButton("Got It", null)
+            .show()
     }
 
     private fun showOverlayPermissionDialog() {
@@ -239,17 +296,18 @@ class TimerFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val ctx = context ?: return
-        val isGuardEnabled = ZeroDistractionGuard.isEnabled(ctx)
         val hasUsage = ZeroDistractionGuard.hasUsagePermission(ctx)
+        val hasOverlay = OverlayBlockerManager.canDrawOverlays(ctx)
 
-        if (isGuardEnabled) {
-            if (!hasUsage) {
-                binding.swZeroDistraction.isChecked = false
-                ZeroDistractionGuard.setEnabled(ctx, false)
-            } else {
-                binding.swZeroDistraction.isChecked = true
-            }
+        if (hasUsage && hasOverlay) {
+            ZeroDistractionGuard.setEnabled(ctx, true)
+            val activeTitle = viewModel.uiState.value.presetTitle
+            val activeRemaining = viewModel.uiState.value.formattedTime
+            FocusGuardService.startService(ctx, activeTitle, activeRemaining)
+        } else {
+            ZeroDistractionGuard.setEnabled(ctx, false)
         }
+        updatePermissionBadgeAndSwitch()
     }
 
     private fun setupControls() {

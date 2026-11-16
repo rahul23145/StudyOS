@@ -23,6 +23,8 @@ class FocusGuardService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
     private var monitorJob: Job? = null
+    @Volatile private var currentTitle: String = "Deep Focus Session"
+    @Volatile private var currentRemaining: String = "--:--"
 
     companion object {
         const val CHANNEL_ID = "studyos_focus_guard_channel"
@@ -68,11 +70,14 @@ class FocusGuardService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action ?: ACTION_START
-        val title = intent?.getStringExtra("TASK_TITLE") ?: "Deep Study Block"
-        val remaining = intent?.getStringExtra("REMAINING_TIME") ?: "--:--"
+        val title = intent?.getStringExtra("TASK_TITLE") ?: currentTitle
+        val remaining = intent?.getStringExtra("REMAINING_TIME") ?: currentRemaining
+
+        currentTitle = title
+        currentRemaining = remaining
 
         when (action) {
-            ACTION_START, ACTION_UPDATE -> {
+            ACTION_START -> {
                 val notification = buildNotification(title, remaining)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     startForeground(
@@ -83,10 +88,20 @@ class FocusGuardService : Service() {
                 } else {
                     startForeground(NOTIFICATION_ID, notification)
                 }
-                startMonitoring(title, remaining)
+                startMonitoring()
+            }
+            ACTION_UPDATE -> {
+                val notification = buildNotification(title, remaining)
+                val manager = getSystemService(NotificationManager::class.java)
+                manager?.notify(NOTIFICATION_ID, notification)
+                if (monitorJob == null || monitorJob?.isActive != true) {
+                    startMonitoring()
+                }
             }
             ACTION_STOP -> {
                 monitorJob?.cancel()
+                monitorJob = null
+                OverlayBlockerManager.hideOverlay(this)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     stopForeground(STOP_FOREGROUND_REMOVE)
                 } else {
@@ -96,18 +111,18 @@ class FocusGuardService : Service() {
                 stopSelf()
             }
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
-    private fun startMonitoring(title: String, remaining: String) {
+    private fun startMonitoring() {
         monitorJob?.cancel()
         monitorJob = serviceScope.launch {
             while (isActive) {
-                delay(500L)
+                delay(300L)
                 ZeroDistractionGuard.checkAndBlockForegroundApp(
                     this@FocusGuardService,
-                    title,
-                    remaining
+                    currentTitle,
+                    currentRemaining
                 )
             }
         }
@@ -152,6 +167,7 @@ class FocusGuardService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         monitorJob?.cancel()
+        OverlayBlockerManager.hideOverlay(this)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

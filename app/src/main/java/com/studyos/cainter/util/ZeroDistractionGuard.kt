@@ -11,6 +11,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.studyos.cainter.R
 import com.studyos.cainter.ui.distraction.BlockedAppActivity
@@ -22,6 +23,7 @@ data class DistractingAppInfo(
 )
 
 object ZeroDistractionGuard {
+    private const val TAG = "ZeroDistractionGuard"
     private const val PREFS_NAME = "studyos_zero_distraction_prefs"
     private const val KEY_ENABLED = "key_distraction_guard_enabled"
     private const val KEY_BLOCKED_PACKAGES = "key_blocked_packages"
@@ -130,6 +132,18 @@ object ZeroDistractionGuard {
             .apply()
     }
 
+    private fun getLauncherPackage(context: Context): String? {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+            }
+            val resolveInfo = context.packageManager.resolveActivity(intent, 0)
+            resolveInfo?.activityInfo?.packageName
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private var lastBlockedTime = 0L
     private var lastBlockedPkg = ""
 
@@ -142,32 +156,60 @@ object ZeroDistractionGuard {
 
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return false
         val now = System.currentTimeMillis()
-        val events = usageStatsManager.queryEvents(now - 60_000, now)
+        val events = usageStatsManager.queryEvents(now - 10_000L, now)
         val event = UsageEvents.Event()
         var latestForegroundPackage: String? = null
         var latestTimestamp = 0L
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
-            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED && event.timeStamp > latestTimestamp) {
-                latestForegroundPackage = event.packageName
-                latestTimestamp = event.timeStamp
+            // Event type 1: ACTIVITY_RESUMED or MOVE_TO_FOREGROUND
+            if (event.eventType == 1 || event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                if (event.timeStamp >= latestTimestamp) {
+                    latestForegroundPackage = event.packageName
+                    latestTimestamp = event.timeStamp
+                }
             }
         }
 
         // Secondary fallback: queryUsageStats
         if (latestForegroundPackage == null) {
-            val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 60_000, now)
-            latestForegroundPackage = stats?.filter { it.packageName != context.packageName }?.maxByOrNull { it.lastTimeUsed }?.packageName
+            val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, now - 10_000L, now)
+            val mostRecent = stats?.filter { it.packageName != context.packageName }?.maxByOrNull { it.lastTimeUsed }
+            if (mostRecent != null && mostRecent.lastTimeUsed > (now - 10_000L)) {
+                latestForegroundPackage = mostRecent.packageName
+            }
         }
 
-        if (latestForegroundPackage != null && latestForegroundPackage != context.packageName) {
+        if (latestForegroundPackage != null) {
+            val launcherPkg = getLauncherPackage(context)
+            // If user is inside StudyOS, default home launcher, or system UI, dismiss overlay
+            if (latestForegroundPackage == context.packageName ||
+                latestForegroundPackage == launcherPkg ||
+                latestForegroundPackage == "com.android.systemui") {
+                OverlayBlockerManager.hideOverlay(context)
+                return false
+            }
+
             val blocked = getBlockedPackages(context)
             if (blocked.contains(latestForegroundPackage)) {
                 val appLabel = DEFAULT_APPS.firstOrNull { it.packageName == latestForegroundPackage }?.appName
                     ?: latestForegroundPackage
 
-                // 1. Instantly display overlay directly on top of the distracting app
+                Log.w(TAG, "Distracting app detected: $latestForegroundPackage ($appLabel). Triggering block enforcement!")
+
+                // Action 1: Instantly minimize distracting app to Home Screen
+                try {
+                    val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                        addCategory(Intent.CATEGORY_HOME)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    context.startActivity(homeIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to launch home intent", e)
+                }
+
+                // Action 2: Instantly display system window overlay directly on top of screen
                 OverlayBlockerManager.showOverlay(context, appLabel, taskTitle, remainingTime)
 
                 if (latestForegroundPackage == lastBlockedPkg && (now - lastBlockedTime) < 1500L) {
@@ -176,8 +218,12 @@ object ZeroDistractionGuard {
                 lastBlockedTime = now
                 lastBlockedPkg = latestForegroundPackage
 
+                // Action 3: Open BlockedAppActivity
                 val intent = Intent(context, BlockedAppActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                     putExtra("BLOCKED_APP_NAME", appLabel)
                     putExtra("BLOCKED_PACKAGE", latestForegroundPackage)
                     putExtra("TASK_TITLE", taskTitle)
@@ -186,8 +232,11 @@ object ZeroDistractionGuard {
 
                 try {
                     context.startActivity(intent)
-                } catch (e: Exception) {}
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to launch BlockedAppActivity", e)
+                }
 
+                // Action 4: High priority full screen notification
                 triggerFullScreenBlockNotification(context, appLabel, taskTitle, remainingTime, intent)
                 return true
             } else {
@@ -216,7 +265,7 @@ object ZeroDistractionGuard {
                     "Distraction Block Alerts",
                     NotificationManager.IMPORTANCE_HIGH
                 ).apply {
-                    description = "Instant popups when a blocked app is opened"
+                    description = "Instant alerts when a blocked app is opened"
                     setBypassDnd(true)
                 }
                 notificationManager.createNotificationChannel(channel)
@@ -239,6 +288,8 @@ object ZeroDistractionGuard {
                 .setAutoCancel(true)
 
             notificationManager.notify(9002, builder.build())
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to trigger block notification", e)
+        }
     }
 }

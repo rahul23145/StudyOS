@@ -381,6 +381,21 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
+                <!-- Permission & Guard Status Indicator -->
+                <TextView
+                    android:id="@+id/tvGuardPermissionStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/rounded_card_bg"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:text="🟢 Zero Distraction Active • Distracting apps blocked"
+                    android:textColor="@color/accent_emerald"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center_vertical" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConfigureDistractions"
                     style="@style/Widget.Material3.Button.TextButton"
