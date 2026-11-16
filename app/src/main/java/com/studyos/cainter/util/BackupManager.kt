@@ -7,6 +7,7 @@ import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.local.entity.ScheduleType
 import com.studyos.cainter.data.local.entity.StudySession
+import com.studyos.cainter.data.local.entity.TodoItem
 import com.studyos.cainter.data.local.entity.WorkoutEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,6 +26,7 @@ object BackupManager {
         val sessions = db.studySessionDao().getAllSessionsSync()
         val scheduleTypes = db.scheduleTypeDao().getAllScheduleTypesSync()
         val workouts = db.workoutDao().getAllWorkoutsSync()
+        val todos = db.todoDao().getAllTodosSync()
 
         val root = JSONObject()
         root.put("version", 1)
@@ -124,6 +126,20 @@ object BackupManager {
             workArr.put(obj)
         }
         root.put("workouts", workArr)
+
+        // Todos
+        val todoArr = JSONArray()
+        for (td in todos) {
+            val obj = JSONObject()
+            obj.put("id", td.id)
+            obj.put("title", td.title)
+            obj.put("isCompleted", td.isCompleted)
+            obj.put("createdAt", td.createdAt)
+            obj.put("completedAt", td.completedAt)
+            obj.put("category", td.category)
+            todoArr.put(obj)
+        }
+        root.put("todos", todoArr)
 
         root.toString(2)
     }
@@ -279,6 +295,29 @@ object BackupManager {
             }
             if (list.isNotEmpty()) {
                 db.workoutDao().insertWorkouts(list)
+                importedCount += list.size
+            }
+        }
+
+        // Todos
+        if (root.has("todos")) {
+            val arr = root.getJSONArray("todos")
+            val list = mutableListOf<TodoItem>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                list.add(
+                    TodoItem(
+                        id = o.optLong("id", 0L),
+                        title = o.getString("title"),
+                        isCompleted = o.optBoolean("isCompleted", false),
+                        createdAt = o.optLong("createdAt", System.currentTimeMillis()),
+                        completedAt = o.optLong("completedAt", 0L),
+                        category = o.optString("category", "GENERAL")
+                    )
+                )
+            }
+            if (list.isNotEmpty()) {
+                db.todoDao().insertAll(list)
                 importedCount += list.size
             }
         }

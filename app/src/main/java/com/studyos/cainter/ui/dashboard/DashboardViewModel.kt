@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.ScheduleItem
+import com.studyos.cainter.data.local.entity.TodoItem
 import com.studyos.cainter.data.repository.ScheduleRepository
 import com.studyos.cainter.data.repository.StudyRepository
+import com.studyos.cainter.data.repository.TodoRepository
 import com.studyos.cainter.ui.common.DayStudyData
 import com.studyos.cainter.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,11 +38,39 @@ data class DashboardUiState(
 
 class DashboardViewModel(
     private val scheduleRepository: ScheduleRepository,
-    private val studyRepository: StudyRepository
+    private val studyRepository: StudyRepository,
+    private val todoRepository: TodoRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
+
+    val todoItems = todoRepository.getAllTodos()
+
+    fun addTodo(title: String) {
+        if (title.isBlank()) return
+        viewModelScope.launch {
+            todoRepository.addTodo(title)
+        }
+    }
+
+    fun toggleTodo(todo: TodoItem, isCompleted: Boolean) {
+        viewModelScope.launch {
+            todoRepository.setCompleted(todo.id, isCompleted)
+        }
+    }
+
+    fun deleteTodo(todo: TodoItem) {
+        viewModelScope.launch {
+            todoRepository.deleteTodoById(todo.id)
+        }
+    }
+
+    fun clearCompletedTodos() {
+        viewModelScope.launch {
+            todoRepository.clearCompleted()
+        }
+    }
 
     init {
         loadDashboardData()
@@ -130,11 +160,12 @@ class DashboardViewModel(
 
     class Factory(
         private val scheduleRepository: ScheduleRepository,
-        private val studyRepository: StudyRepository
+        private val studyRepository: StudyRepository,
+        private val todoRepository: TodoRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return DashboardViewModel(scheduleRepository, studyRepository) as T
+            return DashboardViewModel(scheduleRepository, studyRepository, todoRepository) as T
         }
     }
 }

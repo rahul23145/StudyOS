@@ -30,17 +30,19 @@
                 android:textColor="@color/text_primary_light"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
                 tools:text="Monday Timetable" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnScheduleType"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="38dp"
+                android:layout_height="36dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:text="CA Inter ▾"
                 android:textColor="@color/primary"
                 android:textSize="12sp"
@@ -48,23 +50,27 @@
                 android:backgroundTint="#FFFFFF"
                 app:strokeColor="@color/primary"
                 app:strokeWidth="1.5dp"
-                app:cornerRadius="19dp"
+                app:cornerRadius="18dp"
                 android:layout_marginEnd="6dp"
                 app:icon="@drawable/ic_edit"
                 app:iconTint="@color/primary"
-                app:iconSize="14dp" />
+                app:iconSize="13dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetDefaults"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reset Routine"
+                android:layout_height="36dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Reset"
                 android:textColor="@color/accent_rose"
                 android:textSize="12sp"
                 app:icon="@drawable/ic_reset"
                 app:iconTint="@color/accent_rose"
-                app:iconSize="16dp" />
+                app:iconSize="15dp" />
         </LinearLayout>
 
         <!-- Day Selector Chips (Mon-Sun) -->

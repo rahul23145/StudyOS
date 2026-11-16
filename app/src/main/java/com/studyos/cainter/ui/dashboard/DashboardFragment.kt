@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -32,10 +33,11 @@ class DashboardFragment : Fragment() {
 
     private val viewModel: DashboardViewModel by activityViewModels {
         val app = requireActivity().application as StudyOSApplication
-        DashboardViewModel.Factory(app.scheduleRepository, app.studyRepository)
+        DashboardViewModel.Factory(app.scheduleRepository, app.studyRepository, app.todoRepository)
     }
 
     private lateinit var adapter: TodayScheduleAdapter
+    private lateinit var todoAdapter: TodoAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +52,7 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupExamCountdown()
+        setupTodoSection()
         setupRecyclerView()
         observeUiState()
     }
@@ -100,6 +103,42 @@ class DashboardFragment : Fragment() {
             targetDate.monthValue - 1,
             targetDate.dayOfMonth
         ).show()
+    }
+
+    private fun setupTodoSection() {
+        todoAdapter = TodoAdapter(
+            onToggleDone = { item, isChecked ->
+                viewModel.toggleTodo(item, isChecked)
+            },
+            onDelete = { item ->
+                viewModel.deleteTodo(item)
+            }
+        )
+        binding.rvTodoList.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvTodoList.adapter = todoAdapter
+
+        binding.btnSubmitTodo.setOnClickListener {
+            val text = binding.etNewTodoTitle.text?.toString()?.trim() ?: ""
+            if (text.isNotBlank()) {
+                viewModel.addTodo(text)
+                binding.etNewTodoTitle.text?.clear()
+            }
+        }
+
+        binding.etNewTodoTitle.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val text = binding.etNewTodoTitle.text?.toString()?.trim() ?: ""
+                if (text.isNotBlank()) {
+                    viewModel.addTodo(text)
+                    binding.etNewTodoTitle.text?.clear()
+                }
+                true
+            } else false
+        }
+
+        binding.btnClearCompletedTodos.setOnClickListener {
+            viewModel.clearCompletedTodos()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -182,6 +221,24 @@ class DashboardFragment : Fragment() {
                     }
 
                     adapter.submitList(state.items)
+                }
+
+                launch {
+                    viewModel.todoItems.collect { todos ->
+                        todoAdapter.submitList(todos)
+                        val doneCount = todos.count { it.isCompleted }
+                        binding.tvTodoCounter.text = "$doneCount/${todos.size} Done"
+
+                        if (todos.isEmpty()) {
+                            binding.tvEmptyTodoMessage.visibility = View.VISIBLE
+                            binding.rvTodoList.visibility = View.GONE
+                        } else {
+                            binding.tvEmptyTodoMessage.visibility = View.GONE
+                            binding.rvTodoList.visibility = View.VISIBLE
+                        }
+
+                        binding.btnClearCompletedTodos.visibility = if (doneCount > 0) View.VISIBLE else View.GONE
+                    }
                 }
             }
         }

@@ -34,6 +34,11 @@ class StudyOSApplication : Application() {
             database.workoutDao()
         )
     }
+    val todoRepository by lazy {
+        com.studyos.cainter.data.repository.TodoRepository(
+            database.todoDao()
+        )
+    }
 
     override fun onCreate() {
         super.onCreate()

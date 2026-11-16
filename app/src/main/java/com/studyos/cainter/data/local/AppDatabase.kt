@@ -17,7 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.studyos.cainter.data.local.entity.TodoItem
 import com.studyos.cainter.data.local.entity.WorkoutEntry
+import androidx.room.migration.Migration
 
 @Database(
     entities = [
@@ -26,9 +28,10 @@ import com.studyos.cainter.data.local.entity.WorkoutEntry
         LectureTracker::class,
         StudySession::class,
         ScheduleType::class,
-        WorkoutEntry::class
+        WorkoutEntry::class,
+        TodoItem::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun studySessionDao(): StudySessionDao
     abstract fun scheduleTypeDao(): ScheduleTypeDao
     abstract fun workoutDao(): WorkoutDao
+    abstract fun todoDao(): TodoDao
 
     suspend fun ensureSeeded() {
         withContext(Dispatchers.IO) {
@@ -69,6 +73,21 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `todo_items` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `isCompleted` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `completedAt` INTEGER,
+                        `category` TEXT NOT NULL DEFAULT 'GENERAL'
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getDatabase(context: Context, scope: CoroutineScope): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -76,6 +95,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "studyos_cainter_database.db"
                 )
+                    .addMigrations(MIGRATION_4_5)
                     .addCallback(AppDatabaseCallback(scope))
                     .fallbackToDestructiveMigration()
                     .build()
