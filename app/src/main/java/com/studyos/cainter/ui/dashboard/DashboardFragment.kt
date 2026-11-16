@@ -1,5 +1,8 @@
 package com.studyos.cainter.ui.dashboard
 
+import android.app.DatePickerDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +19,10 @@ import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.databinding.FragmentDashboardBinding
 import com.studyos.cainter.ui.MainActivity
 import com.studyos.cainter.util.DateUtils
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
 import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
@@ -42,8 +49,57 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupExamCountdown()
         setupRecyclerView()
         observeUiState()
+    }
+
+    private fun setupExamCountdown() {
+        val prefs = requireContext().getSharedPreferences("studyos_prefs", Context.MODE_PRIVATE)
+        updateExamCountdownDisplay(prefs)
+
+        binding.cardExamCountdown.setOnClickListener {
+            showExamDatePicker(prefs)
+        }
+    }
+
+    private fun updateExamCountdownDisplay(prefs: SharedPreferences) {
+        val savedDateStr = prefs.getString("key_exam_target_date", "2027-05-02") ?: "2027-05-02"
+        val targetDate = try {
+            LocalDate.parse(savedDateStr)
+        } catch (e: Exception) {
+            LocalDate.of(2027, 5, 2)
+        }
+        val today = LocalDate.now()
+        val daysRemaining = ChronoUnit.DAYS.between(today, targetDate).coerceAtLeast(0)
+
+        binding.tvExamCountdownDays.text = "$daysRemaining Days"
+        val monthYear = targetDate.format(DateTimeFormatter.ofPattern("MMM yyyy", Locale.getDefault()))
+        val fullFormatted = targetDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault()))
+        val examTitle = if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) "Target Goal / Exam Countdown" else "CA Intermediate Target Exam"
+        binding.tvExamCountdownTitle.text = examTitle
+        binding.tvExamCountdownSubtitle.text = "Target: $fullFormatted ($monthYear) • Tap to change"
+    }
+
+    private fun showExamDatePicker(prefs: SharedPreferences) {
+        val savedDateStr = prefs.getString("key_exam_target_date", "2027-05-02") ?: "2027-05-02"
+        val targetDate = try {
+            LocalDate.parse(savedDateStr)
+        } catch (e: Exception) {
+            LocalDate.of(2027, 5, 2)
+        }
+
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                val newTarget = LocalDate.of(year, month + 1, dayOfMonth)
+                prefs.edit().putString("key_exam_target_date", newTarget.toString()).apply()
+                updateExamCountdownDisplay(prefs)
+            },
+            targetDate.year,
+            targetDate.monthValue - 1,
+            targetDate.dayOfMonth
+        ).show()
     }
 
     private fun setupRecyclerView() {

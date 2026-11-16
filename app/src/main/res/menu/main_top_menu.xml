@@ -7,4 +7,10 @@
         android:title="Gym Ledger"
         app:iconTint="@color/on_primary"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_backup_restore"
+        android:icon="@drawable/ic_backup"
+        android:title="Backup &amp; Restore"
+        app:iconTint="@color/on_primary"
+        app:showAsAction="always" />
 </menu>

@@ -32,4 +32,10 @@ interface StudySessionDao {
 
     @Query("SELECT COALESCE(SUM(durationMinutes), 0) FROM study_sessions")
     suspend fun getAllTimeStudyMinutesSync(): Int
+
+    @Query("SELECT * FROM study_sessions")
+    suspend fun getAllSessionsSync(): List<StudySession>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessions(sessions: List<StudySession>)
 }

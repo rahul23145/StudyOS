@@ -48,89 +48,128 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tvStatTodayExercises"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/primary"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            tools:text="4" />
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:id="@+id/tvStatTodayExercises"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/primary"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                tools:text="4" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Today's Exercises"
+                                android:textColor="@color/text_secondary_light"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/divider_light" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Today's Exercises"
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="11sp" />
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvStatTotalExercises"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/secondary"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                tools:text="28" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Total Logged"
+                                android:textColor="@color/text_secondary_light"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/divider_light" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvStatTotalDays"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/accent_emerald"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                tools:text="7" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Active Days"
+                                android:textColor="@color/text_secondary_light"
+                                android:textSize="11sp" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="@color/divider_light" />
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider_light"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="10dp" />
 
+                    <!-- Personal Bests (PRs) & Weekly Volume -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:orientation="vertical"
-                        android:gravity="center">
+                        android:paddingHorizontal="4dp">
 
                         <TextView
-                            android:id="@+id/tvStatTotalExercises"
+                            android:id="@+id/tvGymWeeklyVolume"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/secondary"
-                            android:textSize="22sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
-                            tools:text="28" />
+                            tools:text="Weekly Volume: 24 Sets • 3,450 kg lifted" />
 
                         <TextView
+                            android:id="@+id/tvGymPersonalRecords"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total Logged"
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="@color/divider_light" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <TextView
-                            android:id="@+id/tvStatTotalDays"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/accent_emerald"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            tools:text="7" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Active Days"
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="11sp" />
+                            android:layout_marginTop="3dp"
+                            android:textColor="@color/text_primary_light"
+                            android:textSize="12sp"
+                            tools:text="🏆 Top PRs: Bench Press 75kg • Squats 95kg • Deadlift 120kg" />
                     </LinearLayout>
 
                 </LinearLayout>

@@ -1,8 +1,11 @@
 package com.studyos.cainter.ui
 
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.R
 import com.studyos.cainter.databinding.ActivityMainBinding
@@ -11,6 +14,9 @@ import com.studyos.cainter.ui.dashboard.DashboardFragment
 import com.studyos.cainter.ui.lectures.LecturesFragment
 import com.studyos.cainter.ui.timetable.TimetableFragment
 import com.studyos.cainter.ui.timer.TimerFragment
+import com.studyos.cainter.util.BackupManager
+import com.studyos.cainter.util.DateUtils
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +27,41 @@ class MainActivity : AppCompatActivity() {
     private val lecturesFragment by lazy { LecturesFragment() }
     private val timerFragment by lazy { TimerFragment() }
     private val analyticsFragment by lazy { AnalyticsFragment() }
+
+    private val exportBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            lifecycleScope.launch {
+                try {
+                    val json = BackupManager.createBackupJson(this@MainActivity)
+                    contentResolver.openOutputStream(uri)?.use { os ->
+                        os.write(json.toByteArray(Charsets.UTF_8))
+                    }
+                    android.widget.Toast.makeText(this@MainActivity, "✅ Offline backup exported successfully!", android.widget.Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(this@MainActivity, "❌ Failed to export backup: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private val importBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            lifecycleScope.launch {
+                try {
+                    val json = contentResolver.openInputStream(uri)?.use { it.bufferedReader().readText() } ?: ""
+                    val count = BackupManager.restoreBackupJson(this@MainActivity, json)
+                    android.widget.Toast.makeText(this@MainActivity, "✅ Restored $count records successfully!", android.widget.Toast.LENGTH_LONG).show()
+                    recreate()
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(this@MainActivity, "❌ Failed to restore backup: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +83,10 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_gym_ledger -> {
                     startActivity(android.content.Intent(this, com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
+                    true
+                }
+                R.id.action_backup_restore -> {
+                    showBackupRestoreDialog()
                     true
                 }
                 else -> false
@@ -125,5 +170,20 @@ class MainActivity : AppCompatActivity() {
     fun openTimerWithPreset(title: String, durationMinutes: Int) {
         binding.bottomNavigation.selectedItemId = R.id.navigation_timer
         timerFragment.applyPreset(title, durationMinutes)
+    }
+
+    private fun showBackupRestoreDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Offline Data Backup & Restore")
+            .setMessage("All your timetables, lecture trackers, study sessions, and workout ledger entries are stored offline.\n\nChoose an option:")
+            .setPositiveButton("Export Backup") { _, _ ->
+                val fileName = "StudyOS-Backup-${DateUtils.getTodayDateString()}.json"
+                exportBackupLauncher.launch(fileName)
+            }
+            .setNeutralButton("Restore Backup") { _, _ ->
+                importBackupLauncher.launch(arrayOf("application/json", "text/*", "*/*"))
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }

@@ -26,4 +26,10 @@ interface CompletionDao {
 
     @Query("SELECT DISTINCT date FROM completion_records WHERE isCompleted = 1 ORDER BY date DESC")
     suspend fun getAllCompletedDates(): List<String>
+
+    @Query("SELECT * FROM completion_records")
+    suspend fun getAllCompletions(): List<CompletionRecord>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCompletions(records: List<CompletionRecord>)
 }

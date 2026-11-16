@@ -11,6 +11,7 @@ import com.studyos.cainter.data.repository.StudyRepository
 import com.studyos.cainter.util.DateUtils
 import com.studyos.cainter.util.FocusGuardService
 import com.studyos.cainter.util.SoundVibrationHelper
+import com.studyos.cainter.util.TimerController
 import com.studyos.cainter.util.ZeroDistractionGuard
 import java.time.LocalTime
 import kotlinx.coroutines.Job
@@ -78,6 +79,12 @@ class TimerViewModel(
     private var realTimeSyncJob: Job? = null
 
     init {
+        TimerController.onPauseResumeListener = {
+            startOrPause()
+        }
+        TimerController.onDoneNextListener = {
+            finishCurrentTaskEarly()
+        }
         loadTodayScheduleAsSequence()
     }
 
@@ -600,6 +607,8 @@ class TimerViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        TimerController.onPauseResumeListener = null
+        TimerController.onDoneNextListener = null
         timerJob?.cancel()
         realTimeSyncJob?.cancel()
         FocusGuardService.stopService(getApplication())

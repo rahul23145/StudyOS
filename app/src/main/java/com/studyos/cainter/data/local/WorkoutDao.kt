@@ -41,4 +41,10 @@ interface WorkoutDao {
 
     @Query("SELECT COUNT(*) FROM workout_entries")
     fun getTotalExercisesLoggedCount(): Flow<Int>
+
+    @Query("SELECT * FROM workout_entries")
+    suspend fun getAllWorkoutsSync(): List<WorkoutEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWorkouts(entries: List<WorkoutEntry>)
 }

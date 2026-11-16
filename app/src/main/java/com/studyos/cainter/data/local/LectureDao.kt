@@ -40,4 +40,7 @@ interface LectureDao {
 
     @Query("SELECT COUNT(*) FROM lecture_tracker")
     suspend fun getTrackerCount(): Int
+
+    @Query("SELECT * FROM lecture_tracker")
+    suspend fun getAllTrackersSync(): List<LectureTracker>
 }

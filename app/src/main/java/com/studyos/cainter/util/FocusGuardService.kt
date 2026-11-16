@@ -140,6 +140,26 @@ class FocusGuardService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val pauseResumeIntent = Intent(this, TimerActionReceiver::class.java).apply {
+            action = TimerActionReceiver.ACTION_TIMER_PAUSE_RESUME
+        }
+        val pauseResumePending = PendingIntent.getBroadcast(
+            this,
+            1,
+            pauseResumeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val doneNextIntent = Intent(this, TimerActionReceiver::class.java).apply {
+            action = TimerActionReceiver.ACTION_TIMER_DONE_NEXT
+        }
+        val doneNextPending = PendingIntent.getBroadcast(
+            this,
+            2,
+            doneNextIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("🛡️ Focus Active: $title")
             .setContentText("$remaining remaining • Zero Distraction Guard Active")
@@ -147,6 +167,8 @@ class FocusGuardService : Service() {
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .addAction(R.drawable.ic_pause, "Pause/Resume", pauseResumePending)
+            .addAction(R.drawable.ic_check, "⚡ Done & Next", doneNextPending)
             .build()
     }
 

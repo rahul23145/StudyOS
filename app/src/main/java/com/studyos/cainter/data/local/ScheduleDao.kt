@@ -58,4 +58,7 @@ interface ScheduleDao {
 
     @Query("DELETE FROM schedule_items WHERE scheduleTypeId = :scheduleTypeId")
     suspend fun clearForType(scheduleTypeId: Long)
+
+    @Query("SELECT * FROM schedule_items")
+    suspend fun getAllScheduleItemsSync(): List<ScheduleItem>
 }

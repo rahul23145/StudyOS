@@ -69,6 +69,29 @@ class GymLedgerActivity : AppCompatActivity() {
                 binding.tvStatTotalExercises.text = "$totalCount"
                 binding.tvStatTotalDays.text = "$totalDays"
 
+                // Calculate Weekly Volume (last 7 days)
+                val sevenDaysAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000)
+                val weeklyEntries = allWorkouts.filter { it.timestamp >= sevenDaysAgo }
+                val weeklySets = weeklyEntries.sumOf { it.sets }
+                val weeklyVolumeKg = weeklyEntries.sumOf { (it.sets * it.reps * it.weightKg).toLong() }
+                binding.tvGymWeeklyVolume.text = "Weekly Volume: $weeklySets Sets • ${String.format("%,d", weeklyVolumeKg)} kg lifted"
+
+                // Calculate Top Personal Records (heaviest weight lifted)
+                val prList = allWorkouts
+                    .filter { it.weightKg > 0 }
+                    .groupBy { it.exerciseName.trim() }
+                    .mapValues { (_, entries) -> entries.maxOf { it.weightKg } }
+                    .toList()
+                    .sortedByDescending { it.second }
+                    .take(3)
+
+                if (prList.isNotEmpty()) {
+                    val prStr = prList.joinToString(" • ") { "${it.first} ${it.second.toInt()}kg" }
+                    binding.tvGymPersonalRecords.text = "🏆 Top PRs: $prStr"
+                } else {
+                    binding.tvGymPersonalRecords.text = "🏆 Top PRs: No weighted lifts logged yet. Log your sets!"
+                }
+
                 adapter.submitList(allWorkouts)
 
                 if (allWorkouts.isEmpty()) {
