@@ -21,6 +21,7 @@ object StepCounterManager : SensorEventListener {
     private const val KEY_BASELINE_STEPS = "key_baseline_steps"
     private const val KEY_BASELINE_DATE = "key_baseline_date"
     private const val KEY_LAST_STEPS = "key_last_steps"
+    private const val KEY_TRACKING_ENABLED = "key_step_tracking_enabled"
 
     private var sensorManager: SensorManager? = null
     private var stepCounterSensor: Sensor? = null
@@ -31,6 +32,9 @@ object StepCounterManager : SensorEventListener {
     private var lastStepTimestamp = 0L
     private var walkingStepsAccumulator = 0
     private var runningStepsAccumulator = 0
+
+    @Volatile
+    var currentTodaySteps: Int = 0
 
     fun hasActivityRecognitionPermission(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -49,13 +53,64 @@ object StepCounterManager : SensorEventListener {
                 sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) != null
     }
 
+    fun isTrackingEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_TRACKING_ENABLED, true)
+    }
+
+    fun setTrackingEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_TRACKING_ENABLED, enabled).apply()
+        if (enabled) {
+            startTracking(context)
+        } else {
+            stopTracking(context)
+        }
+    }
+
+    fun getTodaySteps(context: Context): Int {
+        if (currentTodaySteps > 0) return currentTodaySteps
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val today = DateUtils.getTodayDateString()
+        val savedDate = prefs.getString(KEY_BASELINE_DATE, "") ?: ""
+        return if (savedDate == today) {
+            prefs.getInt(KEY_LAST_STEPS, 0)
+        } else {
+            0
+        }
+    }
+
     fun initialize(context: Context) {
         appContext = context.applicationContext
         if (sensorManager == null) {
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
             stepCounterSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         }
+        if (isTrackingEnabled(context)) {
+            startTracking(context)
+        } else {
+            stopTracking(context)
+        }
+    }
+
+    fun startTracking(context: Context) {
+        val appCtx = context.applicationContext
+        appContext = appCtx
+        if (sensorManager == null) {
+            sensorManager = appCtx.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            stepCounterSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        }
         startListening()
+        try {
+            StepTrackingService.startService(appCtx)
+        } catch (_: Exception) {}
+    }
+
+    fun stopTracking(context: Context) {
+        stopListening()
+        try {
+            StepTrackingService.stopService(context.applicationContext)
+        } catch (_: Exception) {}
     }
 
     fun startListening() {
@@ -80,9 +135,14 @@ object StepCounterManager : SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
+        val context = appContext ?: return
+
+        if (!isTrackingEnabled(context)) {
+            stopListening()
+            return
+        }
 
         val totalHardwareSteps = event.values[0].toInt()
-        val context = appContext ?: return
         val today = DateUtils.getTodayDateString()
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -99,6 +159,8 @@ object StepCounterManager : SensorEventListener {
         }
 
         val todayTotalSteps = (totalHardwareSteps - baseline).coerceAtLeast(0)
+        currentTodaySteps = todayTotalSteps
+        prefs.edit().putInt(KEY_LAST_STEPS, todayTotalSteps).apply()
 
         // Cadence estimation
         val now = System.currentTimeMillis()
@@ -118,6 +180,11 @@ object StepCounterManager : SensorEventListener {
         val running = (todayTotalSteps - walking).coerceAtLeast(0)
         val distanceMeters = (walking * 0.762f) + (running * 1.05f)
         val calories = (walking * 0.04f) + (running * 0.065f)
+
+        // Update ongoing background notification
+        try {
+            StepTrackingService.updateNotification(context, todayTotalSteps)
+        } catch (_: Exception) {}
 
         scope.launch {
             try {

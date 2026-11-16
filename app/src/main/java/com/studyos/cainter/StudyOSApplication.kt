@@ -60,5 +60,10 @@ class StudyOSApplication : Application() {
             database.openHelper.writableDatabase
             database.ensureSeeded()
         }
+
+        // Initialize step tracking if enabled
+        if (com.studyos.cainter.util.StepCounterManager.isTrackingEnabled(this)) {
+            com.studyos.cainter.util.StepCounterManager.initialize(this)
+        }
     }
 }

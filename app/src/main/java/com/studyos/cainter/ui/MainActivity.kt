@@ -34,7 +34,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            StepCounterManager.startListening()
+            if (StepCounterManager.isTrackingEnabled(this)) {
+                StepCounterManager.startTracking(this)
+            }
         }
     }
 
@@ -243,6 +245,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        StepCounterManager.stopListening()
+        if (!StepCounterManager.isTrackingEnabled(this)) {
+            StepCounterManager.stopListening()
+        }
     }
 }

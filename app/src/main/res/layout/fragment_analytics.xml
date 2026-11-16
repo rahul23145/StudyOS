@@ -643,14 +643,37 @@
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchStepTracking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="Enable Background Step Tracking" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="2dp">
+
+                    <TextView
+                        android:id="@+id/tvStepTrackingStatus"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="● Active in background"
+                        android:textColor="#0D9488"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/tvStepTargetBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Target: 8,000"
-                        android:textColor="#0D9488"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textColor="@color/text_secondary_light"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <LinearLayout

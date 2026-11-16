@@ -12,6 +12,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.R
@@ -21,6 +23,7 @@ import com.studyos.cainter.util.AppUsageTracker
 import com.studyos.cainter.util.DateUtils
 import com.studyos.cainter.util.MentorPdfReportGenerator
 import com.studyos.cainter.util.ShortsReelsAccessibilityService
+import com.studyos.cainter.util.StepCounterManager
 import com.studyos.cainter.util.ZeroDistractionGuard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,6 +41,20 @@ class AnalyticsFragment : Fragment() {
     }
 
     private lateinit var adapter: RecentSessionsAdapter
+
+    private val stepPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            StepCounterManager.setTrackingEnabled(requireContext(), true)
+            updateStepTrackingSwitchUI(true)
+            Snackbar.make(binding.root, "✅ Step tracking running in background", Snackbar.LENGTH_SHORT).show()
+        } else {
+            StepCounterManager.setTrackingEnabled(requireContext(), false)
+            updateStepTrackingSwitchUI(false)
+            Snackbar.make(binding.root, "⚠️ Physical Activity permission required for step tracking", Snackbar.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,6 +79,7 @@ class AnalyticsFragment : Fragment() {
         }
 
         setupRecyclerView()
+        setupStepTrackingSwitch()
         setupShortsReelsCard()
         setupAppUsageCard()
         observeData()
@@ -71,6 +89,7 @@ class AnalyticsFragment : Fragment() {
         super.onResume()
         loadAppUsageStats()
         updateShortsReelsServiceStatus()
+        updateStepTrackingSwitchUI(StepCounterManager.isTrackingEnabled(requireContext()))
     }
 
     private fun setupMentorReportButton() {
@@ -98,6 +117,40 @@ class AnalyticsFragment : Fragment() {
                     binding.btnGenerateMentorPdf.isEnabled = true
                     binding.btnGenerateMentorPdf.text = "📄 Save Weekly PDF to Downloads"
                 }
+            }
+        }
+    }
+
+    private fun setupStepTrackingSwitch() {
+        val isEnabled = StepCounterManager.isTrackingEnabled(requireContext())
+        updateStepTrackingSwitchUI(isEnabled)
+    }
+
+    private fun updateStepTrackingSwitchUI(isEnabled: Boolean) {
+        binding.switchStepTracking.setOnCheckedChangeListener(null)
+        binding.switchStepTracking.isChecked = isEnabled
+        if (isEnabled) {
+            binding.tvStepTrackingStatus.text = "● Active in background"
+            binding.tvStepTrackingStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.accent_emerald))
+        } else {
+            binding.tvStepTrackingStatus.text = "○ Stopped (not running in background)"
+            binding.tvStepTrackingStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary_light))
+        }
+
+        binding.switchStepTracking.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q &&
+                    !StepCounterManager.hasActivityRecognitionPermission(requireContext())) {
+                    stepPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+                } else {
+                    StepCounterManager.setTrackingEnabled(requireContext(), true)
+                    updateStepTrackingSwitchUI(true)
+                    Snackbar.make(binding.root, "✅ Step tracking running in background", Snackbar.LENGTH_SHORT).show()
+                }
+            } else {
+                StepCounterManager.setTrackingEnabled(requireContext(), false)
+                updateStepTrackingSwitchUI(false)
+                Snackbar.make(binding.root, "Step counter stopped. Not running in background.", Snackbar.LENGTH_SHORT).show()
             }
         }
     }

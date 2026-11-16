@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk = 24
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.11.0"
+        versionCode = 13
+        versionName = "1.12.0"
         manifestPlaceholders["appName"] = "StudyOS"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -26,14 +26,14 @@ android {
         create("cainter") {
             dimension = "edition"
             applicationId = "com.studyos.cainter"
-            versionName = "1.11.0-cainter"
+            versionName = "1.12.0-cainter"
             manifestPlaceholders["appName"] = "StudyOS - CA Inter"
             buildConfigField("boolean", "IS_CUSTOM_APP", "false")
         }
         create("custom") {
             dimension = "edition"
             applicationId = "com.studyos.custom"
-            versionName = "1.11.0-custom"
+            versionName = "1.12.0-custom"
             manifestPlaceholders["appName"] = "StudyOS - Custom Routine"
             buildConfigField("boolean", "IS_CUSTOM_APP", "true")
         }
