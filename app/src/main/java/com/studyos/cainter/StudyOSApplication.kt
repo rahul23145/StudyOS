@@ -39,6 +39,16 @@ class StudyOSApplication : Application() {
             database.todoDao()
         )
     }
+    val stepRepository by lazy {
+        com.studyos.cainter.data.repository.StepRepository(
+            database.stepDao()
+        )
+    }
+    val distractionRepository by lazy {
+        com.studyos.cainter.data.repository.DistractionRepository(
+            database.distractionDao()
+        )
+    }
 
     override fun onCreate() {
         super.onCreate()

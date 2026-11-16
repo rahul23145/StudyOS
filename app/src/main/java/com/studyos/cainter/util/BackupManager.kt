@@ -3,9 +3,11 @@ package com.studyos.cainter.util
 import android.content.Context
 import com.studyos.cainter.StudyOSApplication
 import com.studyos.cainter.data.local.entity.CompletionRecord
+import com.studyos.cainter.data.local.entity.DistractionRecord
 import com.studyos.cainter.data.local.entity.LectureTracker
 import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.local.entity.ScheduleType
+import com.studyos.cainter.data.local.entity.StepRecord
 import com.studyos.cainter.data.local.entity.StudySession
 import com.studyos.cainter.data.local.entity.TodoItem
 import com.studyos.cainter.data.local.entity.WorkoutEntry
@@ -27,6 +29,8 @@ object BackupManager {
         val scheduleTypes = db.scheduleTypeDao().getAllScheduleTypesSync()
         val workouts = db.workoutDao().getAllWorkoutsSync()
         val todos = db.todoDao().getAllTodosSync()
+        val steps = db.stepDao().getAllStepRecordsSync()
+        val distractions = db.distractionDao().getAllRecordsSync()
 
         val root = JSONObject()
         root.put("version", 1)
@@ -140,6 +144,35 @@ object BackupManager {
             todoArr.put(obj)
         }
         root.put("todos", todoArr)
+
+        // Steps
+        val stepArr = JSONArray()
+        for (st in steps) {
+            val obj = JSONObject()
+            obj.put("date", st.date)
+            obj.put("totalSteps", st.totalSteps)
+            obj.put("walkingSteps", st.walkingSteps)
+            obj.put("runningSteps", st.runningSteps)
+            obj.put("distanceMeters", st.distanceMeters.toDouble())
+            obj.put("caloriesBurned", st.caloriesBurned.toDouble())
+            obj.put("lastUpdatedTimestamp", st.lastUpdatedTimestamp)
+            stepArr.put(obj)
+        }
+        root.put("steps", stepArr)
+
+        // Distractions
+        val distArr = JSONArray()
+        for (ds in distractions) {
+            val obj = JSONObject()
+            obj.put("date", ds.date)
+            obj.put("reelsCount", ds.reelsCount)
+            obj.put("shortsCount", ds.shortsCount)
+            obj.put("totalReelsSeconds", ds.totalReelsSeconds)
+            obj.put("totalShortsSeconds", ds.totalShortsSeconds)
+            obj.put("otherAppsSeconds", ds.otherAppsSeconds)
+            distArr.put(obj)
+        }
+        root.put("distractions", distArr)
 
         root.toString(2)
     }
@@ -318,6 +351,53 @@ object BackupManager {
             }
             if (list.isNotEmpty()) {
                 db.todoDao().insertAll(list)
+                importedCount += list.size
+            }
+        }
+
+        // Steps
+        if (root.has("steps")) {
+            val arr = root.getJSONArray("steps")
+            val list = mutableListOf<StepRecord>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                list.add(
+                    StepRecord(
+                        date = o.getString("date"),
+                        totalSteps = o.optInt("totalSteps", 0),
+                        walkingSteps = o.optInt("walkingSteps", 0),
+                        runningSteps = o.optInt("runningSteps", 0),
+                        distanceMeters = o.optDouble("distanceMeters", 0.0).toFloat(),
+                        caloriesBurned = o.optDouble("caloriesBurned", 0.0).toFloat(),
+                        lastUpdatedTimestamp = o.optLong("lastUpdatedTimestamp", System.currentTimeMillis())
+                    )
+                )
+            }
+            if (list.isNotEmpty()) {
+                db.stepDao().insertAll(list)
+                importedCount += list.size
+            }
+        }
+
+        // Distractions
+        if (root.has("distractions")) {
+            val arr = root.getJSONArray("distractions")
+            val list = mutableListOf<DistractionRecord>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                list.add(
+                    DistractionRecord(
+                        date = o.getString("date"),
+                        reelsCount = o.optInt("reelsCount", 0),
+                        shortsCount = o.optInt("shortsCount", 0),
+                        totalReelsSeconds = o.optLong("totalReelsSeconds", 0L),
+                        totalShortsSeconds = o.optLong("totalShortsSeconds", 0L),
+                        otherAppsSeconds = o.optLong("otherAppsSeconds", 0L)
+                    )
+                )
+            }
+            if (list.isNotEmpty()) {
+                db.distractionDao().insertAll(list)
                 importedCount += list.size
             }
         }

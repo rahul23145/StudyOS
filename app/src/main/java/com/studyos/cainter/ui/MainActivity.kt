@@ -16,6 +16,8 @@ import com.studyos.cainter.ui.timetable.TimetableFragment
 import com.studyos.cainter.ui.timer.TimerFragment
 import com.studyos.cainter.util.BackupManager
 import com.studyos.cainter.util.DateUtils
+import com.studyos.cainter.util.MentorPdfReportGenerator
+import com.studyos.cainter.util.StepCounterManager
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +29,14 @@ class MainActivity : AppCompatActivity() {
     private val lecturesFragment by lazy { LecturesFragment() }
     private val timerFragment by lazy { TimerFragment() }
     private val analyticsFragment by lazy { AnalyticsFragment() }
+
+    private val activityRecognitionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            StepCounterManager.startListening()
+        }
+    }
 
     private val exportBackupLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -79,8 +89,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.topAppBar.inflateMenu(R.menu.main_top_menu)
+        if (BuildConfig.IS_CUSTOM_APP) {
+            binding.topAppBar.menu.findItem(R.id.action_mentor_pdf)?.isVisible = false
+        }
         binding.topAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_mentor_pdf -> {
+                    generateMentorPdfReport()
+                    true
+                }
                 R.id.action_gym_ledger -> {
                     startActivity(android.content.Intent(this, com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
                     true
@@ -92,6 +109,10 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        // Initialize hardware Step Counter
+        StepCounterManager.initialize(this)
+        requestActivityRecognitionPermissionIfNeeded()
 
         setupBottomNavigation()
 
@@ -188,5 +209,40 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun requestActivityRecognitionPermissionIfNeeded() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            if (!StepCounterManager.hasActivityRecognitionPermission(this)) {
+                activityRecognitionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+    }
+
+    private fun generateMentorPdfReport() {
+        lifecycleScope.launch {
+            try {
+                android.widget.Toast.makeText(this@MainActivity, "⏳ Generating Weekly Report PDF...", android.widget.Toast.LENGTH_SHORT).show()
+                val uri = MentorPdfReportGenerator.generateWeeklyReport(this@MainActivity)
+                if (uri != null) {
+                    com.google.android.material.snackbar.Snackbar.make(
+                        binding.root,
+                        "✅ Saved to Downloads: StudyOS Weekly Report PDF",
+                        com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                    ).setAction("Open PDF") {
+                        MentorPdfReportGenerator.openPdfViewer(this@MainActivity, uri)
+                    }.show()
+                } else {
+                    android.widget.Toast.makeText(this@MainActivity, "❌ Failed to save PDF to Downloads", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this@MainActivity, "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        StepCounterManager.stopListening()
     }
 }

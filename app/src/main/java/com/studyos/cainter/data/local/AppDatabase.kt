@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.studyos.cainter.data.local.entity.DistractionRecord
+import com.studyos.cainter.data.local.entity.StepRecord
 import com.studyos.cainter.data.local.entity.TodoItem
 import com.studyos.cainter.data.local.entity.WorkoutEntry
 import androidx.room.migration.Migration
@@ -29,9 +31,11 @@ import androidx.room.migration.Migration
         StudySession::class,
         ScheduleType::class,
         WorkoutEntry::class,
-        TodoItem::class
+        TodoItem::class,
+        StepRecord::class,
+        DistractionRecord::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -43,6 +47,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun scheduleTypeDao(): ScheduleTypeDao
     abstract fun workoutDao(): WorkoutDao
     abstract fun todoDao(): TodoDao
+    abstract fun stepDao(): StepDao
+    abstract fun distractionDao(): DistractionDao
 
     suspend fun ensureSeeded() {
         withContext(Dispatchers.IO) {
@@ -88,6 +94,32 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `daily_step_records` (
+                        `date` TEXT PRIMARY KEY NOT NULL,
+                        `totalSteps` INTEGER NOT NULL DEFAULT 0,
+                        `walkingSteps` INTEGER NOT NULL DEFAULT 0,
+                        `runningSteps` INTEGER NOT NULL DEFAULT 0,
+                        `distanceMeters` REAL NOT NULL DEFAULT 0,
+                        `caloriesBurned` REAL NOT NULL DEFAULT 0,
+                        `lastUpdatedTimestamp` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `daily_distraction_records` (
+                        `date` TEXT PRIMARY KEY NOT NULL,
+                        `reelsCount` INTEGER NOT NULL DEFAULT 0,
+                        `shortsCount` INTEGER NOT NULL DEFAULT 0,
+                        `totalReelsSeconds` INTEGER NOT NULL DEFAULT 0,
+                        `totalShortsSeconds` INTEGER NOT NULL DEFAULT 0,
+                        `otherAppsSeconds` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getDatabase(context: Context, scope: CoroutineScope): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -95,7 +127,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "studyos_cainter_database.db"
                 )
-                    .addMigrations(MIGRATION_4_5)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                     .addCallback(AppDatabaseCallback(scope))
                     .fallbackToDestructiveMigration()
                     .build()

@@ -4,16 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import com.studyos.cainter.BuildConfig
+import com.studyos.cainter.R
 import com.studyos.cainter.StudyOSApplication
 import com.studyos.cainter.databinding.FragmentAnalyticsBinding
+import com.studyos.cainter.util.AppUsageTracker
 import com.studyos.cainter.util.DateUtils
+import com.studyos.cainter.util.MentorPdfReportGenerator
+import com.studyos.cainter.util.ShortsReelsAccessibilityService
+import com.studyos.cainter.util.ZeroDistractionGuard
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class AnalyticsFragment : Fragment() {
 
@@ -39,12 +51,137 @@ class AnalyticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+        val isCustom = BuildConfig.IS_CUSTOM_APP
+        if (isCustom) {
             binding.cardCaInterAdherence.visibility = View.GONE
+            // Mentor report feature is EXCLUSIVE to CA Inter edition
+            binding.cardMentorReport.visibility = View.GONE
+        } else {
+            binding.cardMentorReport.visibility = View.VISIBLE
+            setupMentorReportButton()
         }
 
         setupRecyclerView()
+        setupShortsReelsCard()
+        setupAppUsageCard()
         observeData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadAppUsageStats()
+        updateShortsReelsServiceStatus()
+    }
+
+    private fun setupMentorReportButton() {
+        binding.btnGenerateMentorPdf.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    binding.btnGenerateMentorPdf.isEnabled = false
+                    binding.btnGenerateMentorPdf.text = "⏳ Generating PDF..."
+
+                    val uri = MentorPdfReportGenerator.generateWeeklyReport(requireContext())
+                    if (uri != null) {
+                        Snackbar.make(
+                            binding.root,
+                            "✅ Saved to Downloads: StudyOS Weekly Report PDF",
+                            Snackbar.LENGTH_LONG
+                        ).setAction("Open PDF") {
+                            MentorPdfReportGenerator.openPdfViewer(requireContext(), uri)
+                        }.show()
+                    } else {
+                        Snackbar.make(binding.root, "❌ Failed to save PDF to Downloads", Snackbar.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Snackbar.make(binding.root, "Error: ${e.message}", Snackbar.LENGTH_SHORT).show()
+                } finally {
+                    binding.btnGenerateMentorPdf.isEnabled = true
+                    binding.btnGenerateMentorPdf.text = "📄 Save Weekly PDF to Downloads"
+                }
+            }
+        }
+    }
+
+    private fun setupShortsReelsCard() {
+        binding.btnEnableShortsAccessibility.setOnClickListener {
+            ShortsReelsAccessibilityService.openAccessibilitySettings(requireContext())
+        }
+    }
+
+    private fun updateShortsReelsServiceStatus() {
+        val isEnabled = ShortsReelsAccessibilityService.isServiceEnabled(requireContext())
+        if (isEnabled) {
+            binding.btnEnableShortsAccessibility.text = "✓ Scroll Tracker Active"
+            binding.btnEnableShortsAccessibility.setTextColor(requireContext().getColor(R.color.accent_emerald))
+            binding.btnEnableShortsAccessibility.isEnabled = false
+        } else {
+            binding.btnEnableShortsAccessibility.text = "Enable Reel Scroll Tracker (Accessibility)"
+            binding.btnEnableShortsAccessibility.setTextColor(requireContext().getColor(R.color.accent_rose))
+            binding.btnEnableShortsAccessibility.isEnabled = true
+        }
+    }
+
+    private fun setupAppUsageCard() {
+        binding.btnEnableUsageAccess.setOnClickListener {
+            ZeroDistractionGuard.openUsageSettings(requireContext())
+        }
+    }
+
+    private fun loadAppUsageStats() {
+        val hasPermission = AppUsageTracker.hasUsageAccessPermission(requireContext())
+        if (!hasPermission) {
+            binding.btnEnableUsageAccess.visibility = View.VISIBLE
+            binding.tvTotalOtherScreenTime.text = "Needs Permission"
+            binding.layoutAppUsageList.removeAllViews()
+            return
+        }
+
+        binding.btnEnableUsageAccess.visibility = View.GONE
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val usageList = withContext(Dispatchers.IO) {
+                AppUsageTracker.getTodayAppUsage(requireContext())
+            }
+
+            if (_binding == null) return@launch
+
+            binding.layoutAppUsageList.removeAllViews()
+            var totalTimeMillis = 0L
+
+            val topApps = usageList.take(5)
+            for (app in topApps) {
+                totalTimeMillis += app.foregroundTimeMillis
+                val row = layoutInflater.inflate(R.layout.item_app_usage, binding.layoutAppUsageList, false)
+                val ivIcon = row.findViewById<ImageView>(R.id.ivAppIcon)
+                val tvName = row.findViewById<TextView>(R.id.tvAppName)
+                val tvCategory = row.findViewById<TextView>(R.id.tvAppCategory)
+                val tvDuration = row.findViewById<TextView>(R.id.tvAppDuration)
+
+                if (app.iconDrawable != null) {
+                    ivIcon.setImageDrawable(app.iconDrawable)
+                } else {
+                    ivIcon.setImageResource(R.mipmap.ic_launcher)
+                }
+
+                tvName.text = app.appName
+                tvCategory.text = app.category
+                val totalMins = (app.foregroundTimeMillis / 60_000L).toInt()
+                tvDuration.text = if (totalMins >= 60) {
+                    "${totalMins / 60}h ${totalMins % 60}m"
+                } else {
+                    "${totalMins}m"
+                }
+
+                binding.layoutAppUsageList.addView(row)
+            }
+
+            val totalMinsAll = (usageList.sumOf { it.foregroundTimeMillis } / 60_000L).toInt()
+            binding.tvTotalOtherScreenTime.text = if (totalMinsAll >= 60) {
+                "${totalMinsAll / 60}h ${totalMinsAll % 60}m"
+            } else {
+                "${totalMinsAll}m"
+            }
+        }
     }
 
     private fun setupRecyclerView() {
@@ -54,6 +191,9 @@ class AnalyticsFragment : Fragment() {
     }
 
     private fun observeData() {
+        val app = requireActivity().application as StudyOSApplication
+
+        // 1. Observe Study Sessions & Charts
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
@@ -62,6 +202,35 @@ class AnalyticsFragment : Fragment() {
                     binding.tvAnalyticsTotalMinutes.text = DateUtils.formatMinutesToHoursAndMinutes(state.totalAllTimeMinutes)
                     binding.chartWeeklyStudy.setData(state.chartData)
                     adapter.submitList(state.recentSessions)
+                }
+            }
+        }
+
+        // 2. Observe Step Counter
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                app.stepRepository.getTodayStepRecord().collect { record ->
+                    val steps = record?.totalSteps ?: 0
+                    val distanceKm = (record?.distanceMeters ?: 0f) / 1000f
+                    val calories = record?.caloriesBurned ?: 0f
+
+                    binding.tvTodaySteps.text = String.format(Locale.US, "%,d", steps)
+                    val progress = (steps * 100 / 8000).coerceIn(0, 100)
+                    binding.progressSteps.progress = progress
+                    binding.tvStepDistance.text = String.format(Locale.US, "Distance: %.1f km", distanceKm)
+                    binding.tvStepCalories.text = String.format(Locale.US, "Burned: %.0f kcal", calories)
+                }
+            }
+        }
+
+        // 3. Observe Reels & Shorts Counter
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                app.distractionRepository.getTodayDistractionRecord().collect { record ->
+                    val reels = record?.reelsCount ?: 0
+                    val shorts = record?.shortsCount ?: 0
+                    binding.tvReelsCount.text = "$reels Scrolled"
+                    binding.tvShortsCount.text = "$shorts Scrolled"
                 }
             }
         }
