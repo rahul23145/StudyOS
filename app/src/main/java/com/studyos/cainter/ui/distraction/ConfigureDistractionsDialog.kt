@@ -3,6 +3,7 @@ package com.studyos.cainter.ui.distraction
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -12,6 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.studyos.cainter.databinding.DialogConfigureDistractionsBinding
 import com.studyos.cainter.databinding.ItemDistractingAppBinding
 import com.studyos.cainter.util.DistractingAppInfo
+import com.studyos.cainter.util.OverlayBlockerManager
 import com.studyos.cainter.util.ZeroDistractionGuard
 
 class ConfigureDistractionsDialog : DialogFragment() {
@@ -62,6 +64,13 @@ class ConfigureDistractionsDialog : DialogFragment() {
             adapter.notifyItemInserted(appList.size - 1)
             binding.etCustomPackage.setText("")
             Toast.makeText(context, "Added $pkg to blocked list", Toast.LENGTH_SHORT).show()
+        }
+
+        if (OverlayBlockerManager.isMiuiDevice()) {
+            binding.btnMiuiPermissions.visibility = View.VISIBLE
+            binding.btnMiuiPermissions.setOnClickListener {
+                OverlayBlockerManager.openMiuiPermissions(context)
+            }
         }
 
         return MaterialAlertDialogBuilder(context)

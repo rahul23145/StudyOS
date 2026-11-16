@@ -53,4 +53,15 @@
         android:text="+ Add to Blocked List"
         android:textColor="@color/primary" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMiuiPermissions"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="⚙️ Xiaomi / Redmi: Allow Pop-ups in Background"
+        android:textColor="@color/secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
 </LinearLayout>

@@ -21,6 +21,7 @@ import com.studyos.cainter.databinding.DialogAddSequenceTaskBinding
 import com.studyos.cainter.databinding.FragmentTimerBinding
 import com.studyos.cainter.ui.distraction.ConfigureDistractionsDialog
 import com.studyos.cainter.util.FocusGuardService
+import com.studyos.cainter.util.OverlayBlockerManager
 import com.studyos.cainter.util.ZeroDistractionGuard
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -180,15 +181,23 @@ class TimerFragment : Fragment() {
             if (isChecked) {
                 if (!ZeroDistractionGuard.hasUsagePermission(context)) {
                     showUsagePermissionDialog()
+                } else if (!OverlayBlockerManager.canDrawOverlays(context)) {
+                    showOverlayPermissionDialog()
                 } else {
                     ZeroDistractionGuard.setEnabled(context, true)
                     val activeTitle = viewModel.uiState.value.presetTitle
                     val activeRemaining = viewModel.uiState.value.formattedTime
                     FocusGuardService.startService(context, activeTitle, activeRemaining)
-                    Toast.makeText(context, "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
+                    val toastMsg = if (OverlayBlockerManager.isMiuiDevice()) {
+                        "🛡️ Zero Distraction Mode Active!\n(Xiaomi: Allow 'Display pop-up windows in background' in permissions)"
+                    } else {
+                        "🛡️ Zero Distraction Mode Activated!"
+                    }
+                    Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
                 }
             } else {
                 ZeroDistractionGuard.setEnabled(context, false)
+                OverlayBlockerManager.hideOverlay(context)
                 if (viewModel.uiState.value.state != TimerState.RUNNING) {
                     FocusGuardService.stopService(context)
                 }
@@ -199,6 +208,19 @@ class TimerFragment : Fragment() {
         binding.btnConfigureDistractions.setOnClickListener {
             ConfigureDistractionsDialog.newInstance().show(parentFragmentManager, "ConfigureDistractions")
         }
+    }
+
+    private fun showOverlayPermissionDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("🛡️ Display Over Other Apps")
+            .setMessage("To display the blocked screen right on top of Instagram or YouTube when opened, please allow 'Display over other apps' in Android Settings.\n\n• 100% Offline & Private\n• Essential for blocking distracting apps immediately")
+            .setPositiveButton("Open Settings") { _, _ ->
+                OverlayBlockerManager.openOverlaySettings(requireContext())
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                binding.swZeroDistraction.isChecked = false
+            }
+            .show()
     }
 
     private fun showUsagePermissionDialog() {

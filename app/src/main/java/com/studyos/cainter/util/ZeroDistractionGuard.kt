@@ -164,14 +164,17 @@ object ZeroDistractionGuard {
         if (latestForegroundPackage != null && latestForegroundPackage != context.packageName) {
             val blocked = getBlockedPackages(context)
             if (blocked.contains(latestForegroundPackage)) {
+                val appLabel = DEFAULT_APPS.firstOrNull { it.packageName == latestForegroundPackage }?.appName
+                    ?: latestForegroundPackage
+
+                // 1. Instantly display overlay directly on top of the distracting app
+                OverlayBlockerManager.showOverlay(context, appLabel, taskTitle, remainingTime)
+
                 if (latestForegroundPackage == lastBlockedPkg && (now - lastBlockedTime) < 1500L) {
                     return true
                 }
                 lastBlockedTime = now
                 lastBlockedPkg = latestForegroundPackage
-
-                val appLabel = DEFAULT_APPS.firstOrNull { it.packageName == latestForegroundPackage }?.appName
-                    ?: latestForegroundPackage
 
                 val intent = Intent(context, BlockedAppActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
@@ -187,7 +190,11 @@ object ZeroDistractionGuard {
 
                 triggerFullScreenBlockNotification(context, appLabel, taskTitle, remainingTime, intent)
                 return true
+            } else {
+                OverlayBlockerManager.hideOverlay(context)
             }
+        } else {
+            OverlayBlockerManager.hideOverlay(context)
         }
         return false
     }
