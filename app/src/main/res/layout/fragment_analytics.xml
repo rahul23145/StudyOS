@@ -472,7 +472,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Shorts & Reels Addiction Counter Card -->
+        <!-- Instagram & YouTube Screen Time Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardShortsReels"
             android:layout_width="match_parent"
@@ -508,16 +508,25 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="Reels &amp; YouTube Shorts Counter"
+                        android:text="Instagram &amp; YouTube Tracker"
                         android:textColor="@color/text_primary_light"
                         android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvSocialTotalBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0m today"
+                        android:textColor="@color/accent_rose"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Short-form video scroll tracker to protect CA study hours"
+                    android:text="Social media screen time to protect CA study hours"
                     android:textColor="@color/text_secondary_light"
                     android:textSize="11sp"
                     android:layout_marginBottom="12dp" />
@@ -528,7 +537,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Instagram Reels Badge -->
+                    <!-- Instagram Badge -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -542,23 +551,23 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Instagram Reels"
+                            android:text="Instagram"
                             android:textColor="#BE185D"
                             android:textSize="11sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/tvReelsCount"
+                            android:id="@+id/tvInstagramTime"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="0 Scrolled"
+                            android:text="0m today"
                             android:textColor="#9D174D"
                             android:textSize="15sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- YouTube Shorts Badge -->
+                    <!-- YouTube Badge -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -572,33 +581,22 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="YouTube Shorts"
+                            android:text="YouTube"
                             android:textColor="#B91C1C"
                             android:textSize="11sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/tvShortsCount"
+                            android:id="@+id/tvYouTubeTime"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="0 Scrolled"
+                            android:text="0m today"
                             android:textColor="#991B1B"
                             android:textSize="15sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEnableShortsAccessibility"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="6dp"
-                    android:text="Enable Reel Scroll Tracker (Accessibility)"
-                    android:textColor="@color/accent_rose"
-                    android:textSize="11sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

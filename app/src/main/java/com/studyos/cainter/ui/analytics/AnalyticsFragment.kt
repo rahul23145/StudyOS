@@ -22,7 +22,6 @@ import com.studyos.cainter.databinding.FragmentAnalyticsBinding
 import com.studyos.cainter.util.AppUsageTracker
 import com.studyos.cainter.util.DateUtils
 import com.studyos.cainter.util.MentorPdfReportGenerator
-import com.studyos.cainter.util.ShortsReelsAccessibilityService
 import com.studyos.cainter.util.StepCounterManager
 import com.studyos.cainter.util.ZeroDistractionGuard
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +79,6 @@ class AnalyticsFragment : Fragment() {
 
         setupRecyclerView()
         setupStepTrackingSwitch()
-        setupShortsReelsCard()
         setupAppUsageCard()
         observeData()
     }
@@ -88,7 +86,6 @@ class AnalyticsFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         loadAppUsageStats()
-        updateShortsReelsServiceStatus()
         updateStepTrackingSwitchUI(StepCounterManager.isTrackingEnabled(requireContext()))
     }
 
@@ -155,25 +152,6 @@ class AnalyticsFragment : Fragment() {
         }
     }
 
-    private fun setupShortsReelsCard() {
-        binding.btnEnableShortsAccessibility.setOnClickListener {
-            ShortsReelsAccessibilityService.openAccessibilitySettings(requireContext())
-        }
-    }
-
-    private fun updateShortsReelsServiceStatus() {
-        val isEnabled = ShortsReelsAccessibilityService.isServiceEnabled(requireContext())
-        if (isEnabled) {
-            binding.btnEnableShortsAccessibility.text = "✓ Scroll Tracker Active"
-            binding.btnEnableShortsAccessibility.setTextColor(requireContext().getColor(R.color.accent_emerald))
-            binding.btnEnableShortsAccessibility.isEnabled = false
-        } else {
-            binding.btnEnableShortsAccessibility.text = "Enable Reel Scroll Tracker (Accessibility)"
-            binding.btnEnableShortsAccessibility.setTextColor(requireContext().getColor(R.color.accent_rose))
-            binding.btnEnableShortsAccessibility.isEnabled = true
-        }
-    }
-
     private fun setupAppUsageCard() {
         binding.btnEnableUsageAccess.setOnClickListener {
             ZeroDistractionGuard.openUsageSettings(requireContext())
@@ -197,6 +175,17 @@ class AnalyticsFragment : Fragment() {
             }
 
             if (_binding == null) return@launch
+
+            // Update Social Media Card (Instagram & YouTube)
+            val instaMillis = usageList.firstOrNull { it.packageName == "com.instagram.android" }?.foregroundTimeMillis ?: 0L
+            val ytMillis = usageList.firstOrNull { it.packageName == "com.google.android.youtube" }?.foregroundTimeMillis ?: 0L
+            val instaMins = (instaMillis / 60_000L).toInt()
+            val ytMins = (ytMillis / 60_000L).toInt()
+            val socialTotalMins = instaMins + ytMins
+
+            binding.tvInstagramTime.text = if (instaMins >= 60) "${instaMins / 60}h ${instaMins % 60}m" else "${instaMins}m today"
+            binding.tvYouTubeTime.text = if (ytMins >= 60) "${ytMins / 60}h ${ytMins % 60}m" else "${ytMins}m today"
+            binding.tvSocialTotalBadge.text = if (socialTotalMins >= 60) "${socialTotalMins / 60}h ${socialTotalMins % 60}m" else "${socialTotalMins}m today"
 
             binding.layoutAppUsageList.removeAllViews()
             var totalTimeMillis = 0L
@@ -272,18 +261,6 @@ class AnalyticsFragment : Fragment() {
                     binding.progressSteps.progress = progress
                     binding.tvStepDistance.text = String.format(Locale.US, "Distance: %.1f km", distanceKm)
                     binding.tvStepCalories.text = String.format(Locale.US, "Burned: %.0f kcal", calories)
-                }
-            }
-        }
-
-        // 3. Observe Reels & Shorts Counter
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                app.distractionRepository.getTodayDistractionRecord().collect { record ->
-                    val reels = record?.reelsCount ?: 0
-                    val shorts = record?.shortsCount ?: 0
-                    binding.tvReelsCount.text = "$reels Scrolled"
-                    binding.tvShortsCount.text = "$shorts Scrolled"
                 }
             }
         }

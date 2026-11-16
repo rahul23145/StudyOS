@@ -60,8 +60,9 @@ object MentorPdfReportGenerator {
         val totalWeekSteps = stepsList.take(7).sumOf { it.totalSteps }
         val totalWeekDistanceKm = stepsList.take(7).sumOf { it.distanceMeters.toDouble() } / 1000.0
 
-        val totalReels = distractions.take(7).sumOf { it.reelsCount }
-        val totalShorts = distractions.take(7).sumOf { it.shortsCount }
+        val totalUsage = AppUsageTracker.getTodayAppUsage(context)
+        val instaMinutes = ((totalUsage.firstOrNull { it.packageName == "com.instagram.android" }?.foregroundTimeMillis ?: 0L) / 60_000L).toInt()
+        val ytMinutes = ((totalUsage.firstOrNull { it.packageName == "com.google.android.youtube" }?.foregroundTimeMillis ?: 0L) / 60_000L).toInt()
 
         // Create PDF Document (A4: 595 x 842 points)
         val document = PdfDocument()
@@ -79,8 +80,8 @@ object MentorPdfReportGenerator {
             auditMins = auditMinutes,
             totalSteps = totalWeekSteps,
             distanceKm = totalWeekDistanceKm,
-            reelsCount = totalReels,
-            shortsCount = totalShorts,
+            instaMinutes = instaMinutes,
+            ytMinutes = ytMinutes,
             workoutCount = workouts.size.coerceAtMost(7)
         )
 
@@ -103,8 +104,8 @@ object MentorPdfReportGenerator {
         auditMins: Int,
         totalSteps: Int,
         distanceKm: Double,
-        reelsCount: Int,
-        shortsCount: Int,
+        instaMinutes: Int,
+        ytMinutes: Int,
         workoutCount: Int
     ) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -166,11 +167,11 @@ object MentorPdfReportGenerator {
         paint.color = Color.parseColor("#0F172A")
         paint.textSize = 14f
         paint.isFakeBoldText = true
-        canvas.drawText("Digital Discipline & Short-Form Video Audit", 30f, y, paint)
+        canvas.drawText("Digital Discipline & Social Media Audit", 30f, y, paint)
 
         y += 25f
-        drawKpiCard(canvas, 30f, y, 165f, 60f, "Instagram Reels Scrolled", "$reelsCount Reels", if (reelsCount > 40) "#DC2626" else "#059669")
-        drawKpiCard(canvas, 215f, y, 165f, 60f, "YouTube Shorts Scrolled", "$shortsCount Shorts", if (shortsCount > 40) "#DC2626" else "#059669")
+        drawKpiCard(canvas, 30f, y, 165f, 60f, "Instagram Screen Time", "${instaMinutes}m today", if (instaMinutes > 45) "#DC2626" else "#059669")
+        drawKpiCard(canvas, 215f, y, 165f, 60f, "YouTube Screen Time", "${ytMinutes}m today", if (ytMinutes > 45) "#DC2626" else "#059669")
         val focusRatio = if (totalHours > 0) ((totalHours / (totalHours + 1.2)) * 100).toInt() else 85
         drawKpiCard(canvas, 400f, y, 165f, 60f, "Focus Efficiency Ratio", "$focusRatio% Focused", "#1E3A8A")
 
