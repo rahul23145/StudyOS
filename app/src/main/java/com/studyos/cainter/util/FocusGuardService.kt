@@ -103,8 +103,7 @@ class FocusGuardService : Service() {
         monitorJob?.cancel()
         monitorJob = serviceScope.launch {
             while (isActive) {
-                delay(800L)
-                // Fallback monitoring using UsageStatsManager
+                delay(500L)
                 ZeroDistractionGuard.checkAndBlockForegroundApp(
                     this@FocusGuardService,
                     title,

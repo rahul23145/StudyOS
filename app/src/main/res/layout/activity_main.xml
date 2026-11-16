@@ -32,8 +32,9 @@
         android:layout_height="wrap_content"
         android:background="@color/surface_light"
         app:elevation="8dp"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/primary"
+        app:itemIconTint="@color/bottom_nav_color_selector"
+        app:itemTextColor="@color/bottom_nav_color_selector"
+        app:itemActiveIndicatorStyle="@style/StudyOS.BottomNav.ActiveIndicator"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent" />

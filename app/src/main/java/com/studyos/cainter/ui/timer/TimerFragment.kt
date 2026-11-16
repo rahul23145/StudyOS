@@ -20,6 +20,7 @@ import com.studyos.cainter.StudyOSApplication
 import com.studyos.cainter.databinding.DialogAddSequenceTaskBinding
 import com.studyos.cainter.databinding.FragmentTimerBinding
 import com.studyos.cainter.ui.distraction.ConfigureDistractionsDialog
+import com.studyos.cainter.util.FocusGuardService
 import com.studyos.cainter.util.ZeroDistractionGuard
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -181,10 +182,16 @@ class TimerFragment : Fragment() {
                     showUsagePermissionDialog()
                 } else {
                     ZeroDistractionGuard.setEnabled(context, true)
+                    val activeTitle = viewModel.uiState.value.presetTitle
+                    val activeRemaining = viewModel.uiState.value.formattedTime
+                    FocusGuardService.startService(context, activeTitle, activeRemaining)
                     Toast.makeText(context, "🛡️ Zero Distraction Mode Activated!", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 ZeroDistractionGuard.setEnabled(context, false)
+                if (viewModel.uiState.value.state != TimerState.RUNNING) {
+                    FocusGuardService.stopService(context)
+                }
                 Toast.makeText(context, "Zero Distraction Mode Deactivated", Toast.LENGTH_SHORT).show()
             }
         }

@@ -112,7 +112,14 @@ class TimetableFragment : Fragment() {
                     }.collect { (day, activeType) ->
                         binding.tvDayTitle.text = "${DateUtils.getDayName(day)} Schedule"
                         val type = activeType ?: return@collect
-                        binding.btnScheduleType.text = "${type.name.take(12)} ▾"
+                        val displayName = if (type.name.contains("CA Intermediate", ignoreCase = true)) {
+                            "CA Inter ▾"
+                        } else if (type.name.length > 14) {
+                            "${type.name.take(13)}… ▾"
+                        } else {
+                            "${type.name} ▾"
+                        }
+                        binding.btnScheduleType.text = displayName
                         updateOverviewBadge(day, type)
                     }
                 }

@@ -34,12 +34,21 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnScheduleType"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Profiles"
+                android:layout_height="38dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="CA Inter ▾"
                 android:textColor="@color/primary"
                 android:textSize="12sp"
+                android:textStyle="bold"
+                android:backgroundTint="#FFFFFF"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="19dp"
                 android:layout_marginEnd="6dp"
                 app:icon="@drawable/ic_edit"
                 app:iconTint="@color/primary"
@@ -76,49 +85,49 @@
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipMon"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Mon (MWF)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipTue"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tue (TTSS)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipWed"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Wed (MWF)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipThu"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thu (TTSS)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFri"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Fri (MWF)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipSat"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sat (TTSS)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipSun"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/StudyOS.Chip.DayFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sun (Audit-Only)" />

@@ -142,15 +142,23 @@ object ZeroDistractionGuard {
 
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return false
         val now = System.currentTimeMillis()
-        val events = usageStatsManager.queryEvents(now - 3000, now)
+        val events = usageStatsManager.queryEvents(now - 60_000, now)
         val event = UsageEvents.Event()
         var latestForegroundPackage: String? = null
+        var latestTimestamp = 0L
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
-            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED && event.timeStamp > latestTimestamp) {
                 latestForegroundPackage = event.packageName
+                latestTimestamp = event.timeStamp
             }
+        }
+
+        // Secondary fallback: queryUsageStats
+        if (latestForegroundPackage == null) {
+            val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 60_000, now)
+            latestForegroundPackage = stats?.filter { it.packageName != context.packageName }?.maxByOrNull { it.lastTimeUsed }?.packageName
         }
 
         if (latestForegroundPackage != null && latestForegroundPackage != context.packageName) {
@@ -166,7 +174,7 @@ object ZeroDistractionGuard {
                     ?: latestForegroundPackage
 
                 val intent = Intent(context, BlockedAppActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                     putExtra("BLOCKED_APP_NAME", appLabel)
                     putExtra("BLOCKED_PACKAGE", latestForegroundPackage)
                     putExtra("TASK_TITLE", taskTitle)

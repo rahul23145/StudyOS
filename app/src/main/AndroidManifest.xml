@@ -35,6 +35,9 @@
             android:name=".ui.distraction.BlockedAppActivity"
             android:exported="false"
             android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
             android:theme="@style/Theme.StudyOS" />
 
         <service
