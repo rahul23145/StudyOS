@@ -12,6 +12,9 @@ interface CompletionDao {
     @Query("SELECT * FROM completion_records WHERE date = :date")
     fun getCompletionsForDate(date: String): Flow<List<CompletionRecord>>
 
+    @Query("SELECT * FROM completion_records WHERE date = :date")
+    suspend fun getCompletionsForDateSync(date: String): List<CompletionRecord>
+
     @Query("SELECT * FROM completion_records WHERE date = :date AND scheduleItemId = :scheduleItemId LIMIT 1")
     suspend fun getCompletion(date: String, scheduleItemId: Long): CompletionRecord?
 

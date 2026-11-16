@@ -86,6 +86,21 @@ class TimerViewModel(
             finishCurrentTaskEarly()
         }
         loadTodayScheduleAsSequence()
+
+        viewModelScope.launch {
+            val todayDate = DateUtils.getTodayDateString()
+            scheduleRepository.getCompletionsForDate(todayDate).collect { completions ->
+                val completedMap = completions.associate { it.scheduleItemId to it.isCompleted }
+                val currentQueue = _sequenceQueue.value
+                if (currentQueue.isNotEmpty()) {
+                    val updatedQueue = currentQueue.map { task ->
+                        val isDone = task.scheduleItemId?.let { completedMap[it] } ?: task.isCompleted
+                        task.copy(isCompleted = isDone)
+                    }
+                    _sequenceQueue.value = updatedQueue
+                }
+            }
+        }
     }
 
     fun setSequenceMode(enabled: Boolean) {
@@ -110,9 +125,12 @@ class TimerViewModel(
     fun loadTodayScheduleAsSequence() {
         viewModelScope.launch {
             val todayDay = DateUtils.getTodayDayOfWeek()
+            val todayDate = DateUtils.getTodayDateString()
             val activeType = scheduleRepository.getActiveScheduleTypeSync()
             val typeId = activeType?.id ?: 1L
             val items = scheduleRepository.getScheduleForDaySync(todayDay, typeId)
+            val completions = scheduleRepository.getCompletionsForDateSync(todayDate)
+            val completedMap = completions.associate { it.scheduleItemId to it.isCompleted }
 
             if (items.isNotEmpty()) {
                 // Find slot that corresponds to real-world time right now
@@ -121,7 +139,7 @@ class TimerViewModel(
                     activeIdx = items.indexOfFirst { DateUtils.isUpcoming(it.startTime) }
                 }
                 if (activeIdx == -1) {
-                    activeIdx = (items.size - 1).coerceAtLeast(0)
+                    activeIdx = 0
                 }
 
                 val tasks = items.mapIndexed { idx, item ->
@@ -130,7 +148,7 @@ class TimerViewModel(
                         title = item.title,
                         durationMinutes = item.durationMinutes.coerceAtLeast(1),
                         category = item.category,
-                        isCompleted = idx < activeIdx,
+                        isCompleted = completedMap[item.id] ?: false,
                         scheduleItemId = item.id,
                         startTime = item.startTime,
                         endTime = item.endTime
@@ -233,11 +251,8 @@ class TimerViewModel(
     private fun advanceToNextScheduleSlot() {
         val nextIdx = _currentSequenceIndex.value + 1
         if (nextIdx < _sequenceQueue.value.size) {
-            val list = _sequenceQueue.value.toMutableList()
-            list[_currentSequenceIndex.value] = list[_currentSequenceIndex.value].copy(isCompleted = true)
-            _sequenceQueue.value = list
             _currentSequenceIndex.value = nextIdx
-            val nextTask = list[nextIdx]
+            val nextTask = _sequenceQueue.value[nextIdx]
             val todayDay = DateUtils.getTodayDayOfWeek()
             viewModelScope.launch {
                 val activeType = scheduleRepository.getActiveScheduleTypeSync()

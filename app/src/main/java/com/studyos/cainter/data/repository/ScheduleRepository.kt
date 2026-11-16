@@ -77,6 +77,10 @@ class ScheduleRepository(
         return completionDao.getCompletionsForDate(date)
     }
 
+    suspend fun getCompletionsForDateSync(date: String): List<CompletionRecord> {
+        return completionDao.getCompletionsForDateSync(date)
+    }
+
     suspend fun setCompletion(date: String, scheduleItemId: Long, isCompleted: Boolean) {
         if (isCompleted) {
             completionDao.saveCompletion(
