@@ -14,6 +14,9 @@ interface ScheduleTypeDao {
     @Query("SELECT * FROM schedule_types ORDER BY id ASC")
     fun getAllScheduleTypes(): Flow<List<ScheduleType>>
 
+    @Query("SELECT * FROM schedule_types ORDER BY id ASC")
+    suspend fun getAllScheduleTypesSync(): List<ScheduleType>
+
     @Query("SELECT * FROM schedule_types WHERE isActive = 1 LIMIT 1")
     fun getActiveScheduleType(): Flow<ScheduleType?>
 

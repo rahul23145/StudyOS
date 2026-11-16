@@ -1,10 +1,13 @@
 package com.studyos.cainter.ui.timetable
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.studyos.cainter.R
 import com.studyos.cainter.data.local.entity.ScheduleType
 import com.studyos.cainter.databinding.ItemScheduleTypeBinding
 
@@ -35,9 +38,21 @@ class ScheduleTypeAdapter(
             binding.tvTypeTarget.text = "Target: ${type.targetDailyHours}h/day • Wake ${type.wakeTime} • Sleep ${type.sleepTime}"
             binding.rbSelected.isChecked = type.isActive
 
-            binding.cardScheduleType.setOnClickListener {
+            if (type.isActive) {
+                binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.primary)
+                binding.cardScheduleType.strokeWidth = 4
+                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.primary_light))
+            } else {
+                binding.cardScheduleType.strokeColor = ContextCompat.getColor(binding.root.context, R.color.divider_light)
+                binding.cardScheduleType.strokeWidth = 1
+                binding.cardScheduleType.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, R.color.surface_card_light))
+            }
+
+            val clickListener = View.OnClickListener {
                 onSelected(type)
             }
+            binding.cardScheduleType.setOnClickListener(clickListener)
+            binding.rbSelected.setOnClickListener(clickListener)
         }
     }
 

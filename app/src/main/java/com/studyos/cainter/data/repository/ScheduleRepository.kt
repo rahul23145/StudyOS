@@ -1,5 +1,6 @@
 package com.studyos.cainter.data.repository
 
+import com.studyos.cainter.BuildConfig
 import com.studyos.cainter.data.default.DefaultScheduleProvider
 import com.studyos.cainter.data.local.CompletionDao
 import com.studyos.cainter.data.local.ScheduleDao
@@ -8,6 +9,8 @@ import com.studyos.cainter.data.local.entity.CompletionRecord
 import com.studyos.cainter.data.local.entity.ScheduleItem
 import com.studyos.cainter.data.local.entity.ScheduleType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -21,8 +24,20 @@ class ScheduleRepository(
         return scheduleDao.getScheduleForDay(dayOfWeek)
     }
 
+    fun getScheduleForDay(dayOfWeek: Int, scheduleTypeId: Long): Flow<List<ScheduleItem>> {
+        return scheduleDao.getScheduleForDayAndType(dayOfWeek, scheduleTypeId)
+    }
+
+    suspend fun getScheduleForDaySync(dayOfWeek: Int, scheduleTypeId: Long): List<ScheduleItem> {
+        return scheduleDao.getScheduleForDayAndTypeSync(dayOfWeek, scheduleTypeId)
+    }
+
     fun getAllSchedule(): Flow<List<ScheduleItem>> {
         return scheduleDao.getAllScheduleItems()
+    }
+
+    fun getAllScheduleForType(scheduleTypeId: Long): Flow<List<ScheduleItem>> {
+        return scheduleDao.getAllScheduleItemsForType(scheduleTypeId)
     }
 
     suspend fun insertItem(item: ScheduleItem): Long {
@@ -38,8 +53,14 @@ class ScheduleRepository(
     }
 
     suspend fun resetToDefaultSchedule() {
-        scheduleDao.clearAll()
-        scheduleDao.insertAll(DefaultScheduleProvider.getDefaultSchedule())
+        val activeId = getActiveScheduleTypeSync()?.id ?: 1L
+        resetScheduleForType(activeId)
+    }
+
+    suspend fun resetScheduleForType(typeId: Long) {
+        scheduleDao.clearForType(typeId)
+        val defaultItems = DefaultScheduleProvider.getScheduleForType(typeId)
+        scheduleDao.insertAll(defaultItems)
     }
 
     fun getCompletionsForDate(date: String): Flow<List<CompletionRecord>> {
@@ -61,8 +82,11 @@ class ScheduleRepository(
         }
     }
 
-    fun getAllScheduleTypes(): Flow<List<ScheduleType>> {
-        return scheduleTypeDao.getAllScheduleTypes()
+    fun getAllScheduleTypes(): Flow<List<ScheduleType>> = flow {
+        if (scheduleTypeDao.getScheduleTypeCount() == 0) {
+            scheduleTypeDao.insertAll(DefaultScheduleProvider.getDefaultScheduleTypes(BuildConfig.IS_CUSTOM_APP))
+        }
+        emitAll(scheduleTypeDao.getAllScheduleTypes())
     }
 
     fun getActiveScheduleType(): Flow<ScheduleType?> {
@@ -71,19 +95,33 @@ class ScheduleRepository(
 
     suspend fun getActiveScheduleTypeSync(): ScheduleType? {
         return scheduleTypeDao.getActiveScheduleTypeSync()
+            ?: scheduleTypeDao.getAllScheduleTypesSync().firstOrNull()
     }
 
     suspend fun createScheduleType(scheduleType: ScheduleType): Long {
-        return scheduleTypeDao.insert(scheduleType)
+        val id = scheduleTypeDao.insert(scheduleType)
+        val starterSchedule = DefaultScheduleProvider.createStarterScheduleForType(
+            id,
+            scheduleType.wakeTime,
+            scheduleType.sleepTime
+        )
+        scheduleDao.insertAll(starterSchedule)
+        return id
     }
 
     suspend fun deleteScheduleType(scheduleType: ScheduleType) {
         scheduleTypeDao.delete(scheduleType)
+        scheduleDao.clearForType(scheduleType.id)
     }
 
     suspend fun setActiveScheduleType(typeId: Long) {
         scheduleTypeDao.clearActiveStatus()
         scheduleTypeDao.setActiveStatus(typeId)
+        // If the newly activated schedule has 0 items, seed defaults for it
+        if (scheduleDao.getScheduleCountForType(typeId) == 0) {
+            val items = DefaultScheduleProvider.getScheduleForType(typeId)
+            scheduleDao.insertAll(items)
+        }
     }
 
     suspend fun calculateStreak(): Int {

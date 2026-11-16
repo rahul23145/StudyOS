@@ -2,6 +2,7 @@ package com.studyos.cainter.ui.timetable
 
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,7 +22,7 @@ class ScheduleTypeDialog : DialogFragment() {
     private var onTypeSelected: ((ScheduleType) -> Unit)? = null
 
     companion object {
-        fun newInstance(onSelected: (ScheduleType) -> Unit): ScheduleTypeDialog {
+        fun newInstance(onSelected: ((ScheduleType) -> Unit)? = null): ScheduleTypeDialog {
             val dialog = ScheduleTypeDialog()
             dialog.onTypeSelected = onSelected
             return dialog
@@ -36,6 +37,7 @@ class ScheduleTypeDialog : DialogFragment() {
         val adapter = ScheduleTypeAdapter { selectedType ->
             lifecycleScope.launch {
                 repository.setActiveScheduleType(selectedType.id)
+                Toast.makeText(requireContext(), "Switched to: ${selectedType.name}", Toast.LENGTH_SHORT).show()
                 onTypeSelected?.invoke(selectedType)
                 dismiss()
             }
@@ -77,7 +79,7 @@ class ScheduleTypeDialog : DialogFragment() {
                 lifecycleScope.launch {
                     val newType = ScheduleType(
                         name = name,
-                        description = if (desc.isNotBlank()) desc else "Custom Schedule Type",
+                        description = if (desc.isNotBlank()) desc else "Custom Schedule Profile",
                         targetDailyHours = targetHours,
                         wakeTime = wakeTime,
                         sleepTime = sleepTime,
@@ -85,7 +87,8 @@ class ScheduleTypeDialog : DialogFragment() {
                     )
                     val id = repository.createScheduleType(newType)
                     repository.setActiveScheduleType(id)
-                    onTypeSelected?.invoke(newType)
+                    Toast.makeText(requireContext(), "Created & Switched to: $name", Toast.LENGTH_SHORT).show()
+                    onTypeSelected?.invoke(newType.copy(id = id))
                     dismiss()
                 }
             }

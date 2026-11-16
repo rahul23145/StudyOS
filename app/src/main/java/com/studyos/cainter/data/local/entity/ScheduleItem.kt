@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class ScheduleItem(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val scheduleTypeId: Long = 1L,
     val dayOfWeek: Int, // 1 = Monday, ..., 7 = Sunday
     val title: String,
     val category: String, // from ScheduleCategory enum name

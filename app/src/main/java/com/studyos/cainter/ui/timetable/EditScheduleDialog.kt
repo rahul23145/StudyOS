@@ -19,17 +19,20 @@ class EditScheduleDialog : DialogFragment() {
 
     private var itemToEdit: ScheduleItem? = null
     private var defaultDay: Int = 1
+    private var scheduleTypeId: Long = 1L
     private var onSaveListener: ((ScheduleItem) -> Unit)? = null
 
     companion object {
         fun newInstance(
             item: ScheduleItem?,
             defaultDay: Int,
+            scheduleTypeId: Long = 1L,
             onSave: (ScheduleItem) -> Unit
         ): EditScheduleDialog {
             val dialog = EditScheduleDialog()
             dialog.itemToEdit = item
             dialog.defaultDay = defaultDay
+            dialog.scheduleTypeId = scheduleTypeId
             dialog.onSaveListener = onSave
             return dialog
         }
@@ -78,6 +81,7 @@ class EditScheduleDialog : DialogFragment() {
 
                 val savedItem = ScheduleItem(
                     id = item?.id ?: 0L,
+                    scheduleTypeId = item?.scheduleTypeId ?: scheduleTypeId,
                     dayOfWeek = selectedDay,
                     title = title,
                     category = selectedCategory,

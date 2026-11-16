@@ -33,6 +33,7 @@ class StudyOSApplication : Application() {
         // Ensure database defaults are populated on first launch
         applicationScope.launch(Dispatchers.IO) {
             database.openHelper.writableDatabase
+            database.ensureSeeded()
         }
     }
 }
