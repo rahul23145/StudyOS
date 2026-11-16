@@ -854,7 +854,6 @@ object DefaultScheduleProvider {
         }
         return items
     }
-    }
 
     fun getDefaultScheduleTypes(): List<com.studyos.cainter.data.local.entity.ScheduleType> {
         return listOf(
