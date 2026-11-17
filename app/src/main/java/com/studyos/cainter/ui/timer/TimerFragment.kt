@@ -406,6 +406,9 @@ class TimerFragment : Fragment() {
                         Pair(queue, index)
                     }.collect { (queue, index) ->
                         sequenceAdapter.updateData(queue, index)
+                        if (index in queue.indices) {
+                            binding.rvSequenceTasks.scrollToPosition(index)
+                        }
                     }
                 }
 

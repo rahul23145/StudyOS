@@ -14,16 +14,16 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule_items WHERE dayOfWeek = :dayOfWeek ORDER BY startTime ASC")
     fun getScheduleForDay(dayOfWeek: Int): Flow<List<ScheduleItem>>
 
-    @Query("SELECT * FROM schedule_items WHERE dayOfWeek = :dayOfWeek AND scheduleTypeId = :scheduleTypeId ORDER BY startTime ASC")
+    @Query("SELECT * FROM schedule_items WHERE dayOfWeek = :dayOfWeek AND scheduleTypeId = :scheduleTypeId ORDER BY sortOrder ASC")
     fun getScheduleForDayAndType(dayOfWeek: Int, scheduleTypeId: Long): Flow<List<ScheduleItem>>
 
-    @Query("SELECT * FROM schedule_items WHERE dayOfWeek = :dayOfWeek AND scheduleTypeId = :scheduleTypeId ORDER BY startTime ASC")
+    @Query("SELECT * FROM schedule_items WHERE dayOfWeek = :dayOfWeek AND scheduleTypeId = :scheduleTypeId ORDER BY sortOrder ASC")
     suspend fun getScheduleForDayAndTypeSync(dayOfWeek: Int, scheduleTypeId: Long): List<ScheduleItem>
 
-    @Query("SELECT * FROM schedule_items ORDER BY dayOfWeek ASC, startTime ASC")
+    @Query("SELECT * FROM schedule_items ORDER BY dayOfWeek ASC, sortOrder ASC")
     fun getAllScheduleItems(): Flow<List<ScheduleItem>>
 
-    @Query("SELECT * FROM schedule_items WHERE scheduleTypeId = :scheduleTypeId ORDER BY dayOfWeek ASC, startTime ASC")
+    @Query("SELECT * FROM schedule_items WHERE scheduleTypeId = :scheduleTypeId ORDER BY dayOfWeek ASC, sortOrder ASC")
     fun getAllScheduleItemsForType(scheduleTypeId: Long): Flow<List<ScheduleItem>>
 
     @Query("SELECT * FROM schedule_items WHERE id = :id LIMIT 1")
