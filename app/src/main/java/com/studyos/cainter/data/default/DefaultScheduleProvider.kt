@@ -25,7 +25,7 @@ object DefaultScheduleProvider {
         return items
     }
 
-    private fun createMwfSchedule(day: Int): List<ScheduleItem> {
+    fun createMwfSchedule(day: Int): List<ScheduleItem> {
         var order = 1
         return listOf(
             ScheduleItem(
@@ -241,7 +241,7 @@ object DefaultScheduleProvider {
         )
     }
 
-    private fun createTtsSchedule(day: Int): List<ScheduleItem> {
+    fun createTtsSchedule(day: Int): List<ScheduleItem> {
         var order = 1
         return listOf(
             ScheduleItem(
@@ -457,7 +457,7 @@ object DefaultScheduleProvider {
         )
     }
 
-    private fun createSundaySchedule(day: Int): List<ScheduleItem> {
+    fun createSundaySchedule(day: Int): List<ScheduleItem> {
         var order = 1
         return listOf(
             ScheduleItem(

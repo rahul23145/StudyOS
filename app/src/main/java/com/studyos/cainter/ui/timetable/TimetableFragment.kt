@@ -81,6 +81,18 @@ class TimetableFragment : Fragment() {
     }
 
     private fun setupButtons() {
+        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+            binding.cardRebalanceRoutine.visibility = View.GONE
+        } else {
+            binding.cardRebalanceRoutine.visibility = View.VISIBLE
+            binding.btnRebalanceRoutine.setOnClickListener {
+                val currentDay = viewModel.selectedDay.value
+                val typeId = viewModel.activeScheduleType.value?.id ?: 1L
+                val dialog = SmartRoutineOptimizerDialog.newInstance(currentDay, typeId)
+                dialog.show(parentFragmentManager, SmartRoutineOptimizerDialog.TAG)
+            }
+        }
+
         binding.btnScheduleType.setOnClickListener {
             val dialog = ScheduleTypeDialog.newInstance()
             dialog.show(parentFragmentManager, "ScheduleTypeDialog")

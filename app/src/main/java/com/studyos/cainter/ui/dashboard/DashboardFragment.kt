@@ -51,6 +51,17 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (com.studyos.cainter.BuildConfig.IS_CUSTOM_APP) {
+            binding.btnRebalanceToday.visibility = View.GONE
+        } else {
+            binding.btnRebalanceToday.visibility = View.VISIBLE
+            binding.btnRebalanceToday.setOnClickListener {
+                val today = com.studyos.cainter.util.DateUtils.getTodayDayOfWeek()
+                val dialog = com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.newInstance(today, 1L)
+                dialog.show(parentFragmentManager, com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.TAG)
+            }
+        }
+
         setupExamCountdown()
         setupTodoSection()
         setupRecyclerView()

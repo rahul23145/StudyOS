@@ -93,9 +93,16 @@ class MainActivity : AppCompatActivity() {
         binding.topAppBar.inflateMenu(R.menu.main_top_menu)
         if (BuildConfig.IS_CUSTOM_APP) {
             binding.topAppBar.menu.findItem(R.id.action_mentor_pdf)?.isVisible = false
+            binding.topAppBar.menu.findItem(R.id.action_optimize_routine)?.isVisible = false
         }
         binding.topAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_optimize_routine -> {
+                    val today = com.studyos.cainter.util.DateUtils.getTodayDayOfWeek()
+                    val dialog = com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.newInstance(today, 1L)
+                    dialog.show(supportFragmentManager, com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.TAG)
+                    true
+                }
                 R.id.action_mentor_pdf -> {
                     generateMentorPdfReport()
                     true

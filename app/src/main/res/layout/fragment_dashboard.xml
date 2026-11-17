@@ -516,6 +516,20 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRebalanceToday"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="8dp"
+                android:text="⚡ Rebalance (11-12h)"
+                android:textColor="@color/primary"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="6dp" />
+
             <TextView
                 android:id="@+id/tvTasksCompletedCount"
                 android:layout_width="wrap_content"

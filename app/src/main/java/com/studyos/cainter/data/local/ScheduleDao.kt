@@ -56,6 +56,9 @@ interface ScheduleDao {
     @Query("DELETE FROM schedule_items")
     suspend fun clearAll()
 
+    @Query("DELETE FROM schedule_items WHERE dayOfWeek = :dayOfWeek AND scheduleTypeId = :scheduleTypeId")
+    suspend fun clearForDayAndType(dayOfWeek: Int, scheduleTypeId: Long)
+
     @Query("DELETE FROM schedule_items WHERE scheduleTypeId = :scheduleTypeId")
     suspend fun clearForType(scheduleTypeId: Long)
 

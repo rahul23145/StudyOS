@@ -73,6 +73,23 @@ class ScheduleRepository(
         scheduleDao.insertAll(defaultItems)
     }
 
+    suspend fun replaceDaySchedule(dayOfWeek: Int, scheduleTypeId: Long, newItems: List<ScheduleItem>) {
+        scheduleDao.clearForDayAndType(dayOfWeek, scheduleTypeId)
+        scheduleDao.insertAll(newItems)
+    }
+
+    suspend fun resetDayToDefault(dayOfWeek: Int, scheduleTypeId: Long) {
+        scheduleDao.clearForDayAndType(dayOfWeek, scheduleTypeId)
+        val defaultItems = when (dayOfWeek) {
+            1, 3, 5 -> DefaultScheduleProvider.createMwfSchedule(dayOfWeek)
+            2, 4, 6 -> DefaultScheduleProvider.createTtsSchedule(dayOfWeek)
+            7 -> DefaultScheduleProvider.createSundaySchedule(dayOfWeek)
+            else -> DefaultScheduleProvider.createMwfSchedule(dayOfWeek)
+        }
+        val mappedItems = defaultItems.map { it.copy(scheduleTypeId = scheduleTypeId) }
+        scheduleDao.insertAll(mappedItems)
+    }
+
     fun getCompletionsForDate(date: String): Flow<List<CompletionRecord>> {
         return completionDao.getCompletionsForDate(date)
     }

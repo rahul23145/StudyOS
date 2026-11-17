@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_optimize_routine"
+        android:icon="@drawable/ic_tune"
+        android:title="Rebalance Routine (11-12h)"
+        app:iconTint="@color/on_primary"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_mentor_pdf"
         android:icon="@drawable/ic_pdf"
         android:title="Mentor Report (PDF)"
