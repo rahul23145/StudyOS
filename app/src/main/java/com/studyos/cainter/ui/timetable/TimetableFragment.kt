@@ -89,6 +89,9 @@ class TimetableFragment : Fragment() {
                 val currentDay = viewModel.selectedDay.value
                 val typeId = viewModel.activeScheduleType.value?.id ?: 1L
                 val dialog = SmartRoutineOptimizerDialog.newInstance(currentDay, typeId)
+                dialog.onAppliedCallback = {
+                    viewModel.selectDay(currentDay)
+                }
                 dialog.show(parentFragmentManager, SmartRoutineOptimizerDialog.TAG)
             }
         }

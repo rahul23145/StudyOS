@@ -160,6 +160,7 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
                 binding.chipTuitionPresetEvening6.id -> selectedTuitionStartTime = "18:00"
                 binding.chipTuitionPresetMorning8.id -> selectedTuitionStartTime = "08:00"
                 binding.chipTuitionPresetMorning10.id -> selectedTuitionStartTime = "10:00"
+                binding.chipTuitionPresetMorning11.id -> selectedTuitionStartTime = "11:00"
                 binding.chipTuitionPresetAfternoon3.id -> selectedTuitionStartTime = "15:00"
                 binding.chipTuitionCustom.id -> {
                     showTimePicker(selectedTuitionStartTime) { newTime ->

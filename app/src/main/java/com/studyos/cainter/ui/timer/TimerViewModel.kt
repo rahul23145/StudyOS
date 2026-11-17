@@ -88,6 +88,17 @@ class TimerViewModel(
         loadTodayScheduleAsSequence()
 
         viewModelScope.launch {
+            val todayDay = DateUtils.getTodayDayOfWeek()
+            val activeType = scheduleRepository.getActiveScheduleTypeSync()
+            val typeId = activeType?.id ?: 1L
+            scheduleRepository.getScheduleForDay(todayDay, typeId).collect {
+                if (_uiState.value.state == TimerState.IDLE) {
+                    loadTodayScheduleAsSequence()
+                }
+            }
+        }
+
+        viewModelScope.launch {
             val todayDate = DateUtils.getTodayDateString()
             scheduleRepository.getCompletionsForDate(todayDate).collect { completions ->
                 val completedMap = completions.associate { it.scheduleItemId to it.isCompleted }
