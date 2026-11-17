@@ -52,6 +52,8 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initializeDefaultsForDay()
+
         setupWakeTimeControls()
         setupGymControls()
         setupTuitionControls()
@@ -60,6 +62,26 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
 
         updateButtonLabels()
         recalculateAndPreview()
+    }
+
+    private fun initializeDefaultsForDay() {
+        val isTtss = targetDay in listOf(2, 4, 6, 7)
+        if (isTtss) {
+            hasTuition = false
+            selectedTuitionStartTime = "11:00"
+            binding.switchTuitionToday.isChecked = false
+            binding.layoutTuitionDetails.visibility = View.GONE
+            binding.tvTuitionSubtitle.text = "Off on TTSS (Tue/Thu/Sat/Sun). Turn ON if you have extra tuition."
+            binding.btnResetToStandard.text = "Standard TTSS"
+        } else {
+            hasTuition = true
+            selectedTuitionStartTime = "18:00"
+            binding.switchTuitionToday.isChecked = true
+            binding.layoutTuitionDetails.visibility = View.VISIBLE
+            binding.tvTuitionSubtitle.text = "Standard on MWF (Mon/Wed/Fri) 6:00–7:00 PM."
+            binding.btnResetToStandard.text = "Standard MWF"
+        }
+        binding.tvDialogTargetDay.text = "📅 ${DateUtils.getDayName(targetDay)} (${if (isTtss) "TTSS Routine" else "MWF Routine"})"
     }
 
     private fun setupWakeTimeControls() {

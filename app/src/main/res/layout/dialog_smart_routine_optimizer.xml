@@ -46,6 +46,16 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/tvDialogTargetDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary"
+            android:textSize="12.5sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="2dp"
+            tools:text="📅 Tuesday (TTSS Routine • No Tuition by default)" />
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Enter your own changed times below. The system automatically rebalances your day to guarantee ~11 to 12 hours of study."
@@ -364,20 +374,34 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="4dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="3. Tuition Class (Enter Your Time)"
-                android:textColor="@color/text_primary_light"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3. Tuition Class (Enter Your Time)"
+                    android:textColor="@color/text_primary_light"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTuitionSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="11sp"
+                    tools:text="Standard on MWF • Off on TTSS unless you add it" />
+            </LinearLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switchTuitionToday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true" />
+                android:checked="false" />
         </LinearLayout>
 
         <LinearLayout
