@@ -1,5 +1,6 @@
 package com.studyos.cainter.ui.timetable
 
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +12,12 @@ import com.studyos.cainter.StudyOSApplication
 import com.studyos.cainter.databinding.DialogSmartRoutineOptimizerBinding
 import com.studyos.cainter.util.DateUtils
 import com.studyos.cainter.util.RoutineOptimizerEngine
-import com.studyos.cainter.util.RoutineOptimizerEngine.GymShift
-import com.studyos.cainter.util.RoutineOptimizerEngine.OptimizationParams
+import com.studyos.cainter.util.RoutineOptimizerEngine.CustomOptimizationParams
 import com.studyos.cainter.util.RoutineOptimizerEngine.OptimizationResult
-import com.studyos.cainter.util.RoutineOptimizerEngine.TuitionShift
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
 
@@ -28,10 +28,14 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
     var scheduleTypeId: Long = 1L
     var onAppliedCallback: (() -> Unit)? = null
 
+    // User-entered customizable times
     private var selectedWakeTime: String = "07:00"
-    private var selectedBedTime: String = "23:30"
-    private var selectedGymShift: GymShift = GymShift.MORNING
-    private var selectedTuitionShift: TuitionShift = TuitionShift.EVENING_6PM
+    private var hasGym: Boolean = true
+    private var selectedGymStartTime: String = "07:15"
+    private var selectedGymDuration: Int = 60
+    private var hasTuition: Boolean = true
+    private var selectedTuitionStartTime: String = "18:00"
+    private var selectedTuitionDuration: Int = 60
     private var selectedTargetHours: Double = 11.5
 
     private var currentResult: OptimizationResult? = null
@@ -48,13 +52,26 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupChipListeners()
+        setupWakeTimeControls()
+        setupGymControls()
+        setupTuitionControls()
+        setupStudyTargetControls()
         setupActionButtons()
+
+        updateButtonLabels()
         recalculateAndPreview()
     }
 
-    private fun setupChipListeners() {
-        // 1. Wake Time
+    private fun setupWakeTimeControls() {
+        binding.btnPickWakeTime.setOnClickListener {
+            showTimePicker(selectedWakeTime) { newTime ->
+                selectedWakeTime = newTime
+                binding.chipGroupWakeTime.clearCheck()
+                updateButtonLabels()
+                recalculateAndPreview()
+            }
+        }
+
         binding.chipGroupWakeTime.setOnCheckedStateChangeListener { _, checkedIds ->
             when (checkedIds.firstOrNull()) {
                 binding.chipWake0530.id -> selectedWakeTime = "05:30"
@@ -63,33 +80,111 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
                 binding.chipWake0800.id -> selectedWakeTime = "08:00"
                 binding.chipWake0830.id -> selectedWakeTime = "08:30"
                 binding.chipWake0900.id -> selectedWakeTime = "09:00"
+                binding.chipWakeCustom.id -> {
+                    showTimePicker(selectedWakeTime) { newTime ->
+                        selectedWakeTime = newTime
+                        updateButtonLabels()
+                        recalculateAndPreview()
+                    }
+                    return@setOnCheckedStateChangeListener
+                }
             }
+            updateButtonLabels()
+            recalculateAndPreview()
+        }
+    }
+
+    private fun setupGymControls() {
+        binding.switchGymToday.setOnCheckedChangeListener { _, isChecked ->
+            hasGym = isChecked
+            binding.layoutGymDetails.visibility = if (isChecked) View.VISIBLE else View.GONE
             recalculateAndPreview()
         }
 
-        // 2. Gym Shift
-        binding.chipGroupGymShift.setOnCheckedStateChangeListener { _, checkedIds ->
+        binding.btnPickGymTime.setOnClickListener {
+            showTimePicker(selectedGymStartTime) { newTime ->
+                selectedGymStartTime = newTime
+                binding.chipGroupGymTiming.clearCheck()
+                updateButtonLabels()
+                recalculateAndPreview()
+            }
+        }
+
+        binding.chipGroupGymTiming.setOnCheckedStateChangeListener { _, checkedIds ->
             when (checkedIds.firstOrNull()) {
-                binding.chipGymMorning.id -> selectedGymShift = GymShift.MORNING
-                binding.chipGymEvening.id -> selectedGymShift = GymShift.EVENING
-                binding.chipGymNight.id -> selectedGymShift = GymShift.NIGHT
-                binding.chipGymNone.id -> selectedGymShift = GymShift.NONE
+                binding.chipGymPresetMorning.id -> selectedGymStartTime = "07:15"
+                binding.chipGymPresetEvening530.id -> selectedGymStartTime = "17:30"
+                binding.chipGymPresetEvening600.id -> selectedGymStartTime = "18:00"
+                binding.chipGymPresetNight.id -> selectedGymStartTime = "20:30"
+                binding.chipGymCustom.id -> {
+                    showTimePicker(selectedGymStartTime) { newTime ->
+                        selectedGymStartTime = newTime
+                        updateButtonLabels()
+                        recalculateAndPreview()
+                    }
+                    return@setOnCheckedStateChangeListener
+                }
             }
+            updateButtonLabels()
             recalculateAndPreview()
         }
 
-        // 3. Tuition Shift
-        binding.chipGroupTuitionShift.setOnCheckedStateChangeListener { _, checkedIds ->
+        binding.chipGroupGymDuration.setOnCheckedStateChangeListener { _, checkedIds ->
             when (checkedIds.firstOrNull()) {
-                binding.chipTuitionEvening.id -> selectedTuitionShift = TuitionShift.EVENING_6PM
-                binding.chipTuitionMorning8.id -> selectedTuitionShift = TuitionShift.MORNING_8AM
-                binding.chipTuitionMorning10.id -> selectedTuitionShift = TuitionShift.MORNING_10AM
-                binding.chipTuitionNone.id -> selectedTuitionShift = TuitionShift.NONE
+                binding.chipGymDur45.id -> selectedGymDuration = 45
+                binding.chipGymDur60.id -> selectedGymDuration = 60
+                binding.chipGymDur90.id -> selectedGymDuration = 90
             }
             recalculateAndPreview()
         }
+    }
 
-        // 4. Study Target
+    private fun setupTuitionControls() {
+        binding.switchTuitionToday.setOnCheckedChangeListener { _, isChecked ->
+            hasTuition = isChecked
+            binding.layoutTuitionDetails.visibility = if (isChecked) View.VISIBLE else View.GONE
+            recalculateAndPreview()
+        }
+
+        binding.btnPickTuitionTime.setOnClickListener {
+            showTimePicker(selectedTuitionStartTime) { newTime ->
+                selectedTuitionStartTime = newTime
+                binding.chipGroupTuitionTiming.clearCheck()
+                updateButtonLabels()
+                recalculateAndPreview()
+            }
+        }
+
+        binding.chipGroupTuitionTiming.setOnCheckedStateChangeListener { _, checkedIds ->
+            when (checkedIds.firstOrNull()) {
+                binding.chipTuitionPresetEvening6.id -> selectedTuitionStartTime = "18:00"
+                binding.chipTuitionPresetMorning8.id -> selectedTuitionStartTime = "08:00"
+                binding.chipTuitionPresetMorning10.id -> selectedTuitionStartTime = "10:00"
+                binding.chipTuitionPresetAfternoon3.id -> selectedTuitionStartTime = "15:00"
+                binding.chipTuitionCustom.id -> {
+                    showTimePicker(selectedTuitionStartTime) { newTime ->
+                        selectedTuitionStartTime = newTime
+                        updateButtonLabels()
+                        recalculateAndPreview()
+                    }
+                    return@setOnCheckedStateChangeListener
+                }
+            }
+            updateButtonLabels()
+            recalculateAndPreview()
+        }
+
+        binding.chipGroupTuitionDuration.setOnCheckedStateChangeListener { _, checkedIds ->
+            when (checkedIds.firstOrNull()) {
+                binding.chipTuitionDur60.id -> selectedTuitionDuration = 60
+                binding.chipTuitionDur90.id -> selectedTuitionDuration = 90
+                binding.chipTuitionDur120.id -> selectedTuitionDuration = 120
+            }
+            recalculateAndPreview()
+        }
+    }
+
+    private fun setupStudyTargetControls() {
         binding.chipGroupStudyTarget.setOnCheckedStateChangeListener { _, checkedIds ->
             when (checkedIds.firstOrNull()) {
                 binding.chipTarget110.id -> selectedTargetHours = 11.0
@@ -100,14 +195,41 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
         }
     }
 
+    private fun updateButtonLabels() {
+        binding.btnPickWakeTime.text = "⏰ Wake Up: ${RoutineOptimizerEngine.formatTo12Hour(selectedWakeTime)}  (Tap to Enter Time)"
+        binding.btnPickGymTime.text = "🏋️ Gym Start: ${RoutineOptimizerEngine.formatTo12Hour(selectedGymStartTime)}  (Tap to Enter Time)"
+        binding.btnPickTuitionTime.text = "📚 Tuition Start: ${RoutineOptimizerEngine.formatTo12Hour(selectedTuitionStartTime)}  (Tap to Enter Time)"
+    }
+
+    private fun showTimePicker(currentTimeStr: String, onTimePicked: (String) -> Unit) {
+        val totalMins = RoutineOptimizerEngine.timeToMinutes(currentTimeStr)
+        val initialHour = totalMins / 60
+        val initialMin = totalMins % 60
+
+        val dialog = TimePickerDialog(
+            requireContext(),
+            { _, hourOfDay, minute ->
+                val formatted = String.format(Locale.US, "%02d:%02d", hourOfDay, minute)
+                onTimePicked(formatted)
+            },
+            initialHour,
+            initialMin,
+            false // 12-hour format with AM/PM for user ease
+        )
+        dialog.show()
+    }
+
     private fun recalculateAndPreview() {
-        val params = OptimizationParams(
+        val params = CustomOptimizationParams(
             dayOfWeek = targetDay,
             scheduleTypeId = scheduleTypeId,
             wakeTimeStr = selectedWakeTime,
-            bedTimeStr = selectedBedTime,
-            gymShift = selectedGymShift,
-            tuitionShift = selectedTuitionShift,
+            hasGym = hasGym,
+            gymStartTimeStr = selectedGymStartTime,
+            gymDurationMinutes = selectedGymDuration,
+            hasTuition = hasTuition,
+            tuitionStartTimeStr = selectedTuitionStartTime,
+            tuitionDurationMinutes = selectedTuitionDuration,
             targetStudyHours = selectedTargetHours
         )
 
@@ -126,6 +248,7 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
         }
         binding.tvLiveSubjectBreakdown.text = breakdown
         binding.tvLiveSleepRecovery.text = "🛌 Sleep Recovery: ${result.sleepHoursDisplay}"
+        binding.tvLiveTimelinePreview.text = "📋 ${result.timelinePreview}"
     }
 
     private fun setupActionButtons() {

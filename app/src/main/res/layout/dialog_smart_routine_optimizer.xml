@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Adapts dynamically to shifted tuition, evening gym, or late/early wake-up while guaranteeing ~11 to 12 hours of study."
+            android:text="Enter your own changed times below. The system automatically rebalances your day to guarantee ~11 to 12 hours of study."
             android:textColor="@color/text_secondary_light"
             android:textSize="12sp"
             android:layout_marginBottom="16dp" />
@@ -111,7 +111,16 @@
                     android:layout_marginTop="6dp"
                     android:textColor="@color/text_secondary_light"
                     android:textSize="11sp"
-                    tools:text="🛌 Sleep Recovery: 7.5h (11:30 PM – 7:00 AM)" />
+                    tools:text="🛌 Sleep Recovery: 7.5h (11:30 PM – 07:00 AM)" />
+
+                <TextView
+                    android:id="@+id/tvLiveTimelinePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#0284C7"
+                    android:textSize="10.5sp"
+                    tools:text="Timeline: Wake (07:00 AM) ➔ Morning Gym ➔ Costing 1 ➔ Costing 2 ➔ Audit 1 ➔ Tuition ➔ Audit 2 ➔ Practice ➔ Sleep" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -119,11 +128,27 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1. Wake Up Time"
+            android:text="1. Wake Up Time (Enter Your Own Time)"
             android:textColor="@color/text_primary_light"
             android:textSize="13sp"
             android:textStyle="bold"
             android:layout_marginBottom="6dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPickWakeTime"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="⏰ Wake Up: 07:00 AM (Tap to Enter Time)"
+            android:textColor="@color/primary"
+            android:textSize="13.5sp"
+            android:textStyle="bold"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="10dp"
+            android:layout_marginBottom="8dp" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -135,15 +160,14 @@
                 android:id="@+id/chipGroupWakeTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true">
+                app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipWake0530"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="05:30 AM (Early)" />
+                    android:text="05:30 AM" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipWake0630"
@@ -165,7 +189,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="08:00 AM (Late)" />
+                    android:text="08:00 AM" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipWake0830"
@@ -180,116 +204,299 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="09:00 AM" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipWakeCustom"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✏️ Enter Other Time..." />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
-        <!-- 2. Gym / Workout Shift -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2. Gym &amp; Physical Fitness Shift"
-            android:textColor="@color/text_primary_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp" />
-
-        <HorizontalScrollView
+        <!-- 2. Gym / Workout Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="14dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupGymShift"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2. Gym &amp; Workout (Enter Your Time)"
+                android:textColor="@color/text_primary_light"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchGymToday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true">
+                android:checked="true" />
+        </LinearLayout>
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipGymMorning"
-                    style="@style/Widget.Material3.Chip.Filter"
+        <LinearLayout
+            android:id="@+id/layoutGymDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickGymTime"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="🏋️ Gym Start Time: 07:15 AM (Tap to Enter Time)"
+                android:textColor="@color/primary"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="10dp"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="6dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupGymTiming"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Morning Gym (7:15 AM)" />
+                    app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipGymEvening"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymPresetMorning"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Morning (07:15 AM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymPresetEvening530"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Evening (05:30 PM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymPresetEvening600"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Evening (06:00 PM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymPresetNight"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Night (08:30 PM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymCustom"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✏️ Custom Time..." />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Evening Gym / Run (6:00 PM)" />
+                    android:text="Duration: "
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="11.5sp"
+                    android:layout_marginEnd="8dp" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipGymNight"
-                    style="@style/Widget.Material3.Chip.Filter"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupGymDuration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Night Workout (8:30 PM)" />
+                    app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipGymNone"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rest Day / Skip Gym" />
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymDur45"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="45m" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymDur60"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="60m" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymDur90"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="90m" />
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- 3. Tuition Timing -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3. Tuition Class Timing"
-            android:textColor="@color/text_primary_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp" />
-
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="14dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupTuitionShift"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="3. Tuition Class (Enter Your Time)"
+                android:textColor="@color/text_primary_light"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchTuitionToday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true">
+                android:checked="true" />
+        </LinearLayout>
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTuitionEvening"
-                    style="@style/Widget.Material3.Chip.Filter"
+        <LinearLayout
+            android:id="@+id/layoutTuitionDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickTuitionTime"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="📚 Tuition Start Time: 06:00 PM (Tap to Enter Time)"
+                android:textColor="@color/primary"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="10dp"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="6dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupTuitionTiming"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Evening 6:00–7:00 PM (MWF)" />
+                    app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTuitionMorning8"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionPresetEvening6"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Evening (06:00 PM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionPresetMorning8"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Morning (08:00 AM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionPresetMorning10"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Morning (10:00 AM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionPresetAfternoon3"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Afternoon (03:00 PM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionCustom"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✏️ Custom Time..." />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Morning 8:00–9:00 AM" />
+                    android:text="Duration: "
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="11.5sp"
+                    android:layout_marginEnd="8dp" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTuitionMorning10"
-                    style="@style/Widget.Material3.Chip.Filter"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupTuitionDuration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Morning 10:00–11:00 AM" />
+                    app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTuitionNone"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No Tuition Today" />
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionDur60"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="60m" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionDur90"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="90m" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTuitionDur120"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="120m" />
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- 4. Study Target (11 - 12h) -->
         <TextView
@@ -359,7 +566,7 @@
                 style="@style/Widget.Material3.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚡ Apply Optimized Routine"
+                android:text="⚡ Apply Rebalanced Routine"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:textStyle="bold"
