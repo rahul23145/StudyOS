@@ -139,6 +139,11 @@ class TimerViewModel(
             val todayDate = DateUtils.getTodayDateString()
             val activeType = scheduleRepository.getActiveScheduleTypeSync()
             val typeId = activeType?.id ?: 1L
+            val day1Items = scheduleRepository.getScheduleForDaySync(1, typeId)
+            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
+            if (day1Items.isNotEmpty() && !hasLiveAudit) {
+                scheduleRepository.resetScheduleForType(typeId)
+            }
             val items = scheduleRepository.getScheduleForDaySync(todayDay, typeId)
             val completions = scheduleRepository.getCompletionsForDateSync(todayDate)
             val completedMap = completions.associate { it.scheduleItemId to it.isCompleted }

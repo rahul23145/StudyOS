@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk = 24
         targetSdk = 34
-        versionCode = 22
-        versionName = "1.21.0"
+        versionCode = 23
+        versionName = "1.22.0"
         manifestPlaceholders["appName"] = "StudyOS"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

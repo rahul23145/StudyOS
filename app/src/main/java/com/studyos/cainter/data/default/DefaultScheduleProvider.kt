@@ -864,7 +864,7 @@ object DefaultScheduleProvider {
             2L -> getCompetitiveExamSchedule(typeId)
             3L -> getWorkingProfessionalSchedule(typeId)
             4L -> getCollegeStudentSchedule(typeId)
-            5L -> getCustomEditionSchedule(typeId)
+            5L -> getDefaultSchedule().map { it.copy(id = 0, scheduleTypeId = typeId) }
             else -> createStarterScheduleForType(typeId, "07:00", "23:00")
         }
     }

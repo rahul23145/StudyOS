@@ -71,39 +71,42 @@ abstract class AppDatabase : RoomDatabase() {
                 lectureDao().insertAll(trackers)
             }
 
-            // Auto-upgrade CA Inter schedule to v1.21.0 (Live Audit 8:45 AM + Afternoon Costing)
-            context?.let { ctx ->
-                val prefs = ctx.getSharedPreferences("studyos_db_version_prefs", Context.MODE_PRIVATE)
-                val currentVersion = prefs.getInt("key_ca_schedule_schema_version", 0)
-                if (currentVersion < 21 && !isCustom) {
-                    // Update default schedule type 1
-                    scheduleDao().clearForType(1L)
-                    scheduleDao().insertAll(DefaultScheduleProvider.getScheduleForType(1L))
-                    // Update lecture tracker: Audit = 1 daily target (105m), preserve completed lectures
-                    val existingAudit = lectureDao().getTrackerSync("AUDIT")
-                    val existingCosting = lectureDao().getTrackerSync("COSTING")
-                    lectureDao().insertOrUpdate(
-                        LectureTracker(
-                            subject = "COSTING",
-                            displayName = "Cost & Management Accounting (Paper 4)",
-                            totalLectures = 85,
-                            completedLectures = existingCosting?.completedLectures ?: 0,
-                            dailyTarget = 2,
-                            lectureDurationMinutes = 138
-                        )
+            // Auto-upgrade schedule to Live Audit (8:45 AM) + Afternoon Costing routine
+            val day1Items = scheduleDao().getScheduleForDayAndTypeSync(1, 1L)
+            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
+            if (!hasLiveAudit) {
+                // Update default schedule type 1
+                scheduleDao().clearForType(1L)
+                scheduleDao().insertAll(DefaultScheduleProvider.getScheduleForType(1L))
+
+                // Also update custom edition type 5 if running custom flavor
+                scheduleDao().clearForType(5L)
+                val customItems = DefaultScheduleProvider.getScheduleForType(1L).map { it.copy(id = 0, scheduleTypeId = 5L) }
+                scheduleDao().insertAll(customItems)
+
+                // Update lecture tracker: Audit = 1 daily target (105m), preserve completed lectures
+                val existingAudit = lectureDao().getTrackerSync("AUDIT")
+                val existingCosting = lectureDao().getTrackerSync("COSTING")
+                lectureDao().insertOrUpdate(
+                    LectureTracker(
+                        subject = "COSTING",
+                        displayName = "Cost & Management Accounting (Paper 4)",
+                        totalLectures = 85,
+                        completedLectures = existingCosting?.completedLectures ?: 0,
+                        dailyTarget = 2,
+                        lectureDurationMinutes = 138
                     )
-                    lectureDao().insertOrUpdate(
-                        LectureTracker(
-                            subject = "AUDIT",
-                            displayName = "Auditing and Ethics (Paper 5)",
-                            totalLectures = 65,
-                            completedLectures = existingAudit?.completedLectures ?: 0,
-                            dailyTarget = 1,
-                            lectureDurationMinutes = 105
-                        )
+                )
+                lectureDao().insertOrUpdate(
+                    LectureTracker(
+                        subject = "AUDIT",
+                        displayName = "Auditing and Ethics (Paper 5)",
+                        totalLectures = 65,
+                        completedLectures = existingAudit?.completedLectures ?: 0,
+                        dailyTarget = 1,
+                        lectureDurationMinutes = 105
                     )
-                    prefs.edit().putInt("key_ca_schedule_schema_version", 21).apply()
-                }
+                )
             }
 
             // Always purge any duplicate entries

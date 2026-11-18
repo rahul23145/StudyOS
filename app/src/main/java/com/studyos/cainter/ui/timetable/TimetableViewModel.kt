@@ -32,6 +32,12 @@ class TimetableViewModel(
     init {
         viewModelScope.launch {
             repository.removeDuplicates()
+            val activeId = repository.getActiveScheduleTypeSync()?.id ?: 1L
+            val day1Items = repository.getScheduleForDaySync(1, activeId)
+            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
+            if (day1Items.isNotEmpty() && !hasLiveAudit) {
+                repository.resetScheduleForType(activeId)
+            }
         }
         viewModelScope.launch {
             combine(_selectedDay, repository.getActiveScheduleType()) { day, activeType ->
