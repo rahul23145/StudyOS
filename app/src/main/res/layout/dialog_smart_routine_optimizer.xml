@@ -191,8 +191,15 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="07:00 AM" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipWake0730"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="07:00 AM (Standard)" />
+                    android:text="07:30 AM (Standard)" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipWake0800"
@@ -260,7 +267,7 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="🏋️ Gym Start Time: 07:15 AM (Tap to Enter Time)"
+                android:text="🏋️ Gym Start Time: 10:45 AM (Tap to Enter Time)"
                 android:textColor="@color/primary"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
@@ -284,12 +291,19 @@
                     app:singleSelection="true">
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipGymPresetMorning"
+                        android:id="@+id/chipGymPresetPostAudit"
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="Morning (07:15 AM)" />
+                        android:text="Post-Audit (10:45 AM)" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipGymPresetMorning"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Morning (07:00 AM)" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipGymPresetEvening530"

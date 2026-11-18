@@ -29,12 +29,12 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
     var onAppliedCallback: (() -> Unit)? = null
 
     // User-entered customizable times
-    private var selectedWakeTime: String = "07:00"
+    private var selectedWakeTime: String = "07:30"
     private var hasGym: Boolean = true
-    private var selectedGymStartTime: String = "07:15"
+    private var selectedGymStartTime: String = "10:45"
     private var selectedGymDuration: Int = 60
     private var hasTuition: Boolean = true
-    private var selectedTuitionStartTime: String = "18:00"
+    private var selectedTuitionStartTime: String = "18:15"
     private var selectedTuitionDuration: Int = 60
     private var selectedTargetHours: Double = 11.5
 
@@ -66,19 +66,21 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
 
     private fun initializeDefaultsForDay() {
         val isTtss = targetDay in listOf(2, 4, 6, 7)
+        selectedWakeTime = "07:30"
+        selectedGymStartTime = "10:45"
         if (isTtss) {
             hasTuition = false
-            selectedTuitionStartTime = "11:00"
+            selectedTuitionStartTime = "18:15"
             binding.switchTuitionToday.isChecked = false
             binding.layoutTuitionDetails.visibility = View.GONE
             binding.tvTuitionSubtitle.text = "Off on TTSS (Tue/Thu/Sat/Sun). Turn ON if you have extra tuition."
             binding.btnResetToStandard.text = "Standard TTSS"
         } else {
             hasTuition = true
-            selectedTuitionStartTime = "18:00"
+            selectedTuitionStartTime = "18:15"
             binding.switchTuitionToday.isChecked = true
             binding.layoutTuitionDetails.visibility = View.VISIBLE
-            binding.tvTuitionSubtitle.text = "Standard on MWF (Mon/Wed/Fri) 6:00–7:00 PM."
+            binding.tvTuitionSubtitle.text = "Standard on MWF (Mon/Wed/Fri) 6:15–7:15 PM."
             binding.btnResetToStandard.text = "Standard MWF"
         }
         binding.tvDialogTargetDay.text = "📅 ${DateUtils.getDayName(targetDay)} (${if (isTtss) "TTSS Routine" else "MWF Routine"})"
@@ -99,6 +101,7 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
                 binding.chipWake0530.id -> selectedWakeTime = "05:30"
                 binding.chipWake0630.id -> selectedWakeTime = "06:30"
                 binding.chipWake0700.id -> selectedWakeTime = "07:00"
+                binding.chipWake0730.id -> selectedWakeTime = "07:30"
                 binding.chipWake0800.id -> selectedWakeTime = "08:00"
                 binding.chipWake0830.id -> selectedWakeTime = "08:30"
                 binding.chipWake0900.id -> selectedWakeTime = "09:00"
@@ -134,7 +137,8 @@ class SmartRoutineOptimizerDialog : BottomSheetDialogFragment() {
 
         binding.chipGroupGymTiming.setOnCheckedStateChangeListener { _, checkedIds ->
             when (checkedIds.firstOrNull()) {
-                binding.chipGymPresetMorning.id -> selectedGymStartTime = "07:15"
+                binding.chipGymPresetPostAudit.id -> selectedGymStartTime = "10:45"
+                binding.chipGymPresetMorning.id -> selectedGymStartTime = "07:00"
                 binding.chipGymPresetEvening530.id -> selectedGymStartTime = "17:30"
                 binding.chipGymPresetEvening600.id -> selectedGymStartTime = "18:00"
                 binding.chipGymPresetNight.id -> selectedGymStartTime = "20:30"

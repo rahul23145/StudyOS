@@ -58,7 +58,7 @@ class StudyOSApplication : Application() {
         // Ensure database defaults are populated on first launch
         applicationScope.launch(Dispatchers.IO) {
             database.openHelper.writableDatabase
-            database.ensureSeeded()
+            database.ensureSeeded(this@StudyOSApplication)
         }
 
         // Initialize step tracking if enabled

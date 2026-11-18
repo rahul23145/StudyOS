@@ -7,30 +7,30 @@ import java.util.Locale
 object RoutineOptimizerEngine {
 
     enum class GymShift(val displayName: String) {
-        MORNING("Morning Gym (7:15 AM)"),
-        EVENING("Evening Gym (6:00 PM)"),
-        NIGHT("Night Workout (8:30 PM)"),
+        POST_AUDIT("Post-Audit Gym (10:45 AM)"),
+        MORNING("Early Morning Gym (07:00 AM)"),
+        EVENING("Evening Gym (06:00 PM)"),
+        NIGHT("Night Workout (08:30 PM)"),
         NONE("Rest Day / Skip Gym")
     }
 
     enum class TuitionShift(val displayName: String, val minutes: Int) {
-        EVENING_6PM("Evening 6:00–7:00 PM (MWF)", 60),
-        MORNING_8AM("Morning 8:00–9:00 AM", 60),
-        MORNING_10AM("Morning 10:00–11:00 AM", 60),
-        MORNING_11AM("Morning 11:00 AM–12:00 PM", 60),
-        AFTERNOON_3PM("Afternoon 3:00–4:00 PM", 60),
+        EVENING_615PM("Evening 6:15–7:15 PM (MWF)", 60),
+        EVENING_6PM("Evening 6:00–7:00 PM", 60),
+        MORNING_8AM("Early Morning 7:30–8:30 AM", 60),
+        AFTERNOON_12PM("Afternoon 12:00–1:00 PM", 60),
         NONE("No Tuition Today", 0)
     }
 
     data class CustomOptimizationParams(
         val dayOfWeek: Int,
         val scheduleTypeId: Long = 1L,
-        val wakeTimeStr: String = "07:00",
+        val wakeTimeStr: String = "07:30",
         val hasGym: Boolean = true,
-        val gymStartTimeStr: String = "07:15",
+        val gymStartTimeStr: String = "10:45",
         val gymDurationMinutes: Int = 60,
         val hasTuition: Boolean = true,
-        val tuitionStartTimeStr: String = "18:00",
+        val tuitionStartTimeStr: String = "18:15",
         val tuitionDurationMinutes: Int = 60,
         val targetStudyHours: Double = 11.5
     )
@@ -93,183 +93,137 @@ object RoutineOptimizerEngine {
         // 1. Wake up
         addBlock("Wake Up & Hydrate", ScheduleCategory.WAKE, 15, "Circadian rhythm start & hydration")
 
-        // 2. Morning Gym (before 12:00 PM)
-        if (hasGym && gymStartMins < 720) {
+        // 2. Morning Period before Live Audit (Live Audit is locked at 08:45 AM = 525 mins)
+        val auditLiveStart = 525 // 08:45 AM
+        val auditDuration = 105  // 1h 45m (08:45 to 10:30 AM)
+
+        // Check if user specifically requested Early Morning Gym (before Audit, < 8:45 AM)
+        if (hasGym && gymStartMins < auditLiveStart) {
             if (gymStartMins > currentMins) {
                 val prepDuration = gymStartMins - currentMins
                 addBlock("Freshen Up & Pre-Workout Snack", ScheduleCategory.BREAK, prepDuration, "Light snack, pre-workout hydration")
                 currentMins = gymStartMins
             }
             addBlock("Morning Gym / Workout", ScheduleCategory.GYM, gymDur, "Strength & cardio conditioning")
-            addBlock("Post-Workout Shower & Breakfast", ScheduleCategory.BREAK, 25, "High-protein breakfast & shower")
-            addBlock("Travel: Home to Study Room", ScheduleCategory.TRAVEL, 15, "Transition to distraction-free study desk")
-        } else {
-            addBlock("Freshen Up & Breakfast", ScheduleCategory.BREAK, 30, "Nutritious breakfast at home")
-            addBlock("Travel: Home to Study Room", ScheduleCategory.TRAVEL, 15, "Transition to distraction-free study desk")
-        }
-
-        // 3. Morning Schedule Construction
-        var auditLecture1Completed = false
-
-        if (hasTuition && tuitionStartMins < 720) { // Morning Tuition (< 12:00 PM)
-            val availableMinsBeforeTuition = (tuitionStartMins - 15) - currentMins
-
-            if (availableMinsBeforeTuition >= 138) {
-                // Costing 1 (138m) fits before tuition!
-                addBlock("Costing Lecture 1 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Module lecture with formulas & solved problems")
-                addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 12, "Stretch, hydrate, rest eyes")
-                if (tuitionStartMins - 15 > currentMins) {
-                    val gap = (tuitionStartMins - 15) - currentMins
-                    if (gap >= 15) {
-                        addBlock("Formula & Notes Revision", ScheduleCategory.STUDY_BLOCK, gap, "Quick formula revision")
-                    }
-                }
-                addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, 15, "Commute to tuition class")
-                currentMins = tuitionStartMins
-                addBlock("Tuition Class (Morning Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} tuition session")
-                addBlock("Travel: Tuition to Study Room", ScheduleCategory.TRAVEL, 15, "Return to study desk")
-                addBlock("Costing Lecture 2 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Daily lecture 2 & module illustrations")
-            } else if (availableMinsBeforeTuition >= 90) {
-                // Audit 1 (90m) fits before tuition! (e.g. Tuition at 11:00 AM)
-                addBlock("Audit Lecture 1 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Auditing & Ethics Standards deep dive")
-                auditLecture1Completed = true
-                if (tuitionStartMins - 15 > currentMins) {
-                    val gap = (tuitionStartMins - 15) - currentMins
-                    if (gap >= 15) {
-                        addBlock("Audit Concept Recall & Revision", ScheduleCategory.STUDY_BLOCK, gap, "Active concept recall before tuition")
-                    }
-                }
-                addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, 15, "Commute to tuition class")
-                currentMins = tuitionStartMins
-                addBlock("Tuition Class (Morning Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} tuition session")
-                addBlock("Travel: Tuition to Study Room", ScheduleCategory.TRAVEL, 15, "Return to study desk")
-                addBlock("Costing Lecture 1 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Module lecture with formulas & solved problems")
-            } else {
-                // Early Morning Tuition (e.g. 8:00 AM)
-                if (tuitionStartMins - 15 > currentMins) {
-                    addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, (tuitionStartMins - currentMins).coerceIn(10, 20), "Commute to tuition")
-                } else if (tuitionStartMins > currentMins) {
-                    addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, tuitionStartMins - currentMins, "Commute to tuition")
-                }
-                currentMins = tuitionStartMins
-                addBlock("Tuition Class (Morning Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} tuition session")
-                addBlock("Travel: Tuition to Study Room", ScheduleCategory.TRAVEL, 15, "Transition back to study room")
-                addBlock("Costing Lecture 1 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Module lecture with formulas & solved problems")
-                addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 12, "Stretch, hydrate, rest eyes")
-                addBlock("Costing Lecture 2 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Daily lecture 2 & module illustrations")
+            val availableBeforeAudit = (auditLiveStart - 15) - currentMins
+            if (availableBeforeAudit > 0) {
+                addBlock("Post-Workout Shower & Breakfast", ScheduleCategory.BREAK, availableBeforeAudit, "Shower & high-protein breakfast")
             }
+            addBlock("Travel / Settle at Study Desk", ScheduleCategory.TRAVEL, 15, "Transition & prepare notes for live session")
+            currentMins = auditLiveStart
         } else {
-            // Standard Morning Lectures (Costing 1 + Costing 2)
-            addBlock("Costing Lecture 1 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Module lecture with formulas & solved problems")
-            addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 12, "Stretch, hydrate, rest eyes")
-            addBlock("Costing Lecture 2 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Daily lecture 2 & module illustrations")
-        }
-
-        // 4. Midday Lunch
-        addBlock("Travel: Study Room to Home", ScheduleCategory.TRAVEL, 15, "Commute home for lunch")
-        addBlock("Lunch at Home & Relaxation", ScheduleCategory.LUNCH, 35, "Home-cooked lunch & mental reset")
-        addBlock("Travel: Home to Study Room", ScheduleCategory.TRAVEL, 15, "Return to study desk for afternoon shift")
-
-        // 5. Afternoon Shift: Costing 2 (if deferred due to mid-morning tuition) or Audit 1
-        if (items.none { it.title.contains("Costing Lecture 2") }) {
-            addBlock("Costing Lecture 2 (2h 18m)", ScheduleCategory.COSTING, 138, "CA Inter Paper 4 - Daily lecture 2 & module illustrations")
-            addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 12, "Stretch, hydrate, rest eyes")
-        }
-
-        if (!auditLecture1Completed) {
-            if (hasTuition && tuitionStartMins in 720..1020) { // Afternoon tuition (12:00 PM – 5:00 PM)
-                if (tuitionStartMins >= currentMins + 90) {
-                    addBlock("Audit Lecture 1 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Auditing & Ethics Standards deep dive")
-                    auditLecture1Completed = true
-                    if (tuitionStartMins > currentMins) {
-                        addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, (tuitionStartMins - currentMins).coerceIn(10, 30), "Commute to tuition")
-                        currentMins = tuitionStartMins
-                    }
-                    addBlock("Tuition Class (Afternoon Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} afternoon tuition session")
-                    addBlock("Travel: Tuition to Study Room", ScheduleCategory.TRAVEL, 15, "Return to study desk")
-                } else {
-                    if (tuitionStartMins > currentMins) {
-                        addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, tuitionStartMins - currentMins, "Commute to tuition")
-                        currentMins = tuitionStartMins
-                    }
-                    addBlock("Tuition Class (Afternoon Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} afternoon tuition session")
-                    addBlock("Travel: Tuition to Study Room", ScheduleCategory.TRAVEL, 15, "Return to study desk")
-                    addBlock("Audit Lecture 1 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Auditing & Ethics Standards deep dive")
-                    auditLecture1Completed = true
-                }
-            } else {
-                addBlock("Audit Lecture 1 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Auditing & Ethics Standards deep dive")
-                auditLecture1Completed = true
-                addBlock("Tea Break & Active Recall", ScheduleCategory.BREAK, 15, "15-minute concept recall over tea")
+            // Standard: Breakfast before Live Audit
+            val deskSetupTime = 15
+            val availableForBreakfast = (auditLiveStart - deskSetupTime) - currentMins
+            if (availableForBreakfast > 0) {
+                addBlock("Freshen Up & Breakfast", ScheduleCategory.BREAK, availableForBreakfast, "High-protein breakfast at home before Live Audit")
             }
+            addBlock("Travel / Settle at Study Desk", ScheduleCategory.TRAVEL, deskSetupTime, "Transition & prepare notes for live session")
+            currentMins = auditLiveStart
         }
+
+        // 3. Live Audit Lecture (08:45 AM – 10:30 AM)
+        addBlock(
+            "Live Audit Lecture (1h 45m)",
+            ScheduleCategory.AUDIT,
+            auditDuration,
+            "CA Inter Paper 5 - Auditing & Ethics LIVE Batch (08:45–10:30 AM)"
+        )
+        currentMins = 630 // 10:30 AM
+
+        // 4. Post-Audit Mid-Day Shift (10:30 AM – 01:15 PM): Gym + Lunch
+        // Default / Recommended: Gym after Audit (10:45 AM)
+        if (hasGym && gymStartMins in 600..750) {
+            if (gymStartMins > currentMins) {
+                val gap = gymStartMins - currentMins
+                addBlock("Post-Audit Hydrate & Gym Gear", ScheduleCategory.BREAK, gap, "Hydrate and transition to gym workout")
+                currentMins = gymStartMins
+            }
+            addBlock("Morning Gym", ScheduleCategory.GYM, gymDur, "Strength & endurance conditioning session")
+            addBlock("Post-Workout Shower & Refresh", ScheduleCategory.BREAK, 30, "Shower & protein refreshment")
+            addBlock("Lunch at Home & Relaxation", ScheduleCategory.LUNCH, 45, "Home-cooked lunch & short relaxation")
+            addBlock("Travel: Home to Study Room", ScheduleCategory.TRAVEL, 15, "15-minute transition to distraction-free study room")
+            currentMins = 795 // 13:15 (1:15 PM)
+        } else {
+            // No gym or gym scheduled for evening/night
+            addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 15, "Hydrate, rest eyes & stretch")
+            addBlock("Audit Notes & Concept Consolidation", ScheduleCategory.STUDY_BLOCK, 75, "Consolidate live lecture concepts and memory codes")
+            addBlock("Lunch at Home & Relaxation", ScheduleCategory.LUNCH, 45, "Home-cooked lunch & short relaxation")
+            addBlock("Travel: Home to Study Room", ScheduleCategory.TRAVEL, 15, "15-minute transition to distraction-free study room")
+            currentMins = 795 // 13:15 (1:15 PM)
+        }
+
+        // 5. Afternoon Recorded Costing Lectures (1:15 PM onwards)
+        addBlock(
+            "Costing Lecture 1 (2h 18m)",
+            ScheduleCategory.COSTING,
+            138,
+            "CA Inter Paper 4 - Module lecture with formulas & solved problems (recorded)"
+        )
+        addBlock("Study Room Recharge Break", ScheduleCategory.BREAK, 12, "Stretch, hydrate, rest eyes")
+        addBlock(
+            "Costing Lecture 2 (2h 18m)",
+            ScheduleCategory.COSTING,
+            138,
+            "CA Inter Paper 4 - Daily lecture 2 & module illustrations (recorded)"
+        )
+        // currentMins is now 795 + 138 + 12 + 138 = 1083 (06:03 PM)
 
         // 6. Evening Shift: Tuition vs Running (TTSS) vs Evening Gym
-        if (hasTuition && tuitionStartMins > 1020) { // Evening Tuition (e.g. 6:00 PM MWF)
-            val travelTime = 15
-            val targetPreTuition = tuitionStartMins - travelTime
-            if (targetPreTuition > currentMins) {
-                val studyGap = targetPreTuition - currentMins
-                if (studyGap >= 15) {
-                    addBlock("Audit Notes & Pre-Tuition Study", ScheduleCategory.STUDY_BLOCK, studyGap, "Consolidate lecture 1 concepts & revise formula sheet")
-                }
-            }
+        if (hasTuition && tuitionStartMins >= 1020) { // Evening Tuition (e.g. 6:15 PM MWF)
             if (tuitionStartMins > currentMins) {
-                addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, 15, "Commute to tuition class")
+                val gap = tuitionStartMins - currentMins
+                addBlock("Travel to Tuition", ScheduleCategory.TRAVEL, gap, "Commute to tuition class")
                 currentMins = tuitionStartMins
             }
-            addBlock("Tuition Class (Evening Shift)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} evening tuition session")
-            addBlock("Travel from Tuition to Study Desk", ScheduleCategory.TRAVEL, 15, "Return to study desk")
-
-            addBlock("Audit Lecture 2 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Audit lecture 2 & case studies")
-            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 30, "Light dinner & relaxation")
+            addBlock("Tuition Class (MWF)", ScheduleCategory.TUITION, tuitionDur, "${formatTo12Hour(params.tuitionStartTimeStr)} tuition session")
+            addBlock("Travel from Tuition to Home", ScheduleCategory.TRAVEL, 15, "Return home for dinner")
+            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 30, "Nutritious dinner & mental reset")
+            currentMins = 1200 // 20:00 (8:00 PM)
         } else if (isTtssDay) {
-            // TTSS Routine: Running 6:30–7:15 PM + Audit 2
-            val targetRunningStart = 1110 // 18:30 (6:30 PM)
+            // TTSS Routine: Running 6:25–7:10 PM + Dinner
+            val targetRunningStart = 1105 // 18:25 (6:25 PM)
             if (targetRunningStart > currentMins) {
                 val gap = targetRunningStart - currentMins
-                if (gap >= 20) {
-                    addBlock("Audit Notes & Formula Sheet Revision", ScheduleCategory.STUDY_BLOCK, gap, "Active recall & formula revision")
-                }
+                addBlock("Travel Home for Running", ScheduleCategory.TRAVEL, gap, "Change into running gear")
                 currentMins = targetRunningStart
             }
             addBlock("TTSS Running Session", ScheduleCategory.RUNNING, 45, "Outdoor endurance run & cool-down (Tue/Thu/Sat/Sun routine)")
-            addBlock("Freshen Up & Dinner at Home", ScheduleCategory.LUNCH, 45, "Post-run shower, hydration & nutritious dinner")
-            addBlock("Audit Lecture 2 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Audit lecture 2 & case studies")
-        } else if (hasGym && gymStartMins in 960..1230) {
-            // Evening Gym on non-running days
-            addBlock("Audit Lecture 2 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Audit lecture 2 & case studies")
+            addBlock("Freshen Up & Dinner at Home", ScheduleCategory.LUNCH, 35, "Dinner, hydration & post-run shower")
+            addBlock("Transition to Study Desk", ScheduleCategory.TRAVEL, 15, "Settle down for evening study block")
+            currentMins = 1200 // 20:00 (8:00 PM)
+        } else if (hasGym && gymStartMins >= 1020) {
+            // Evening Gym
             if (gymStartMins > currentMins) {
                 val gap = gymStartMins - currentMins
-                if (gap >= 15) {
-                    addBlock("Self-Study & Formula Revision", ScheduleCategory.STUDY_BLOCK, gap, "Quick formula revision")
-                }
+                addBlock("Self-Study & Formula Revision", ScheduleCategory.STUDY_BLOCK, gap, "Quick formula revision")
                 currentMins = gymStartMins
             }
-            addBlock("Evening Gym & Running", ScheduleCategory.GYM, gymDur, "Strength training, running & cardio endurance")
+            addBlock("Evening Gym & Workout", ScheduleCategory.GYM, gymDur, "Strength training & cardio endurance")
             addBlock("Post-Workout Shower & Shake", ScheduleCategory.BREAK, 25, "Shower, protein shake & refresh")
-            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 30, "Light dinner & relaxation")
+            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 30, "Nutritious dinner & relaxation")
+            currentMins = currentMins.coerceAtLeast(1200)
         } else {
-            // Standard self-study evening
-            addBlock("Self-Study & Audit Practice", ScheduleCategory.STUDY_BLOCK, 45, "Auditing Standards summary & MCQ practice")
-            addBlock("Audit Lecture 2 (1h 30m)", ScheduleCategory.AUDIT, 90, "CA Inter Paper 5 - Audit lecture 2 & case studies")
-            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 30, "Light dinner & relaxation")
+            // Standard dinner
+            addBlock("Dinner & Refreshment", ScheduleCategory.LUNCH, 40, "Light dinner & relaxation")
+            addBlock("Transition to Study Desk", ScheduleCategory.TRAVEL, 15, "Settle down for evening study block")
+            currentMins = 1170 // 19:30 (7:30 PM)
         }
 
         // 7. Dynamic Deep Focus Practical Problem Solving Block (guarantees ~11h to 12h study)
         val currentStudyMins = items.filter { isStudyCategory(it.category) }.sumOf { it.durationMinutes }
-        val neededPracticeMins = (targetStudyMinutes - currentStudyMins).coerceIn(45, 180)
+        val neededPracticeMins = (targetStudyMinutes - currentStudyMins).coerceIn(120, 240)
 
         val hours = neededPracticeMins / 60
         val mins = neededPracticeMins % 60
         val durationLabel = if (hours > 0 && mins > 0) "${hours}h ${mins}m" else if (hours > 0) "${hours}-Hour" else "${mins}m"
-        val practiceTitle = "$durationLabel Deep Focus Block (Practical Problems & RTP)"
+        val practiceTitle = "$durationLabel Deep Focus Block (Practical Problems & Audit Review)"
 
         addBlock(
             practiceTitle,
             ScheduleCategory.STUDY_BLOCK,
             neededPracticeMins,
-            "Costing practical problem solving, ICAI RTP & Audit case study questions"
+            "Costing practical problem solving, ICAI RTP/MTP & Audit concept revision"
         )
 
         // 8. Day Wrap-up & Tomorrow Planning
@@ -278,7 +232,7 @@ object RoutineOptimizerEngine {
         // 9. Sleep (7.5 to 8 hours recovery)
         val sleepStartMins = currentMins
         val sleepDurationRaw = ((wakeMins - (sleepStartMins % 1440) + 1440) % 1440)
-        val sleepDuration = if (sleepDurationRaw <= 0) 450 else sleepDurationRaw
+        val sleepDuration = if (sleepDurationRaw <= 0) 465 else sleepDurationRaw
         addBlock(
             "Sleep",
             ScheduleCategory.SLEEP,
@@ -299,6 +253,7 @@ object RoutineOptimizerEngine {
 
         val shiftNotes = buildString {
             append("Waking: ").append(formatTo12Hour(params.wakeTimeStr))
+            append(" • Live Audit: 8:45–10:30 AM")
             if (hasGym) {
                 append(" • Gym: ").append(formatTo12Hour(params.gymStartTimeStr)).append(" (").append(gymDur).append("m)")
             } else {
@@ -314,22 +269,17 @@ object RoutineOptimizerEngine {
 
         val timelinePreview = buildString {
             append("Wake (").append(formatTo12Hour(params.wakeTimeStr)).append(")")
-            if (hasGym && gymStartMins < 720) {
+            append(" ➔ Breakfast ➔ Live Audit (08:45 AM)")
+            if (hasGym && gymStartMins in 600..750) {
                 append(" ➔ Gym (").append(formatTo12Hour(params.gymStartTimeStr)).append(")")
             }
-            if (hasTuition && tuitionStartMins < 720) {
+            append(" ➔ Lunch ➔ Costing 1 (1:15 PM) ➔ Costing 2 (3:45 PM)")
+            if (hasTuition) {
                 append(" ➔ Tuition (").append(formatTo12Hour(params.tuitionStartTimeStr)).append(")")
+            } else if (isTtssDay) {
+                append(" ➔ Running (06:25 PM)")
             }
-            append(" ➔ Costing 1 ➔ Costing 2 ➔ Lunch ➔ Audit 1")
-            if (hasTuition && tuitionStartMins in 720..1020) {
-                append(" ➔ Tuition (").append(formatTo12Hour(params.tuitionStartTimeStr)).append(")")
-            } else if (hasTuition && tuitionStartMins > 1020) {
-                append(" ➔ Tuition (").append(formatTo12Hour(params.tuitionStartTimeStr)).append(")")
-            }
-            if (isTtssDay) {
-                append(" ➔ Running (06:30 PM)")
-            }
-            append(" ➔ Audit 2 ➔ Practice ➔ Sleep (").append(formatTo12Hour(minutesToTime(sleepStartMins))).append(")")
+            append(" ➔ Deep Focus Practice ➔ Sleep (").append(formatTo12Hour(minutesToTime(sleepStartMins))).append(")")
         }
 
         return OptimizationResult(
@@ -360,7 +310,7 @@ object RoutineOptimizerEngine {
             val m = if (parts.size > 1) parts[1].toInt() else 0
             (h * 60 + m) % 1440
         } catch (_: Exception) {
-            420 // 07:00 fallback
+            450 // 07:30 fallback
         }
     }
 
