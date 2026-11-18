@@ -140,8 +140,8 @@ class TimerViewModel(
             val activeType = scheduleRepository.getActiveScheduleTypeSync()
             val typeId = activeType?.id ?: 1L
             val day1Items = scheduleRepository.getScheduleForDaySync(1, typeId)
-            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
-            if (day1Items.isNotEmpty() && !hasLiveAudit) {
+            val has745LiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) && it.startTime == "07:45" }
+            if (day1Items.isNotEmpty() && !has745LiveAudit) {
                 scheduleRepository.resetScheduleForType(typeId)
             }
             val items = scheduleRepository.getScheduleForDaySync(todayDay, typeId)

@@ -71,10 +71,10 @@ abstract class AppDatabase : RoomDatabase() {
                 lectureDao().insertAll(trackers)
             }
 
-            // Auto-upgrade schedule to Live Audit (8:45 AM) + Afternoon Costing routine
+            // Auto-upgrade schedule to Live Audit (07:45–10:15 AM) + Post-Audit Gym + Afternoon Costing routine
             val day1Items = scheduleDao().getScheduleForDayAndTypeSync(1, 1L)
-            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
-            if (!hasLiveAudit) {
+            val has745LiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) && it.startTime == "07:45" }
+            if (!has745LiveAudit) {
                 // Update default schedule type 1
                 scheduleDao().clearForType(1L)
                 scheduleDao().insertAll(DefaultScheduleProvider.getScheduleForType(1L))
@@ -84,7 +84,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val customItems = DefaultScheduleProvider.getScheduleForType(1L).map { it.copy(id = 0, scheduleTypeId = 5L) }
                 scheduleDao().insertAll(customItems)
 
-                // Update lecture tracker: Audit = 1 daily target (105m), preserve completed lectures
+                // Update lecture tracker: Audit = 1 daily target (150m), Costing = 2 daily target (138m), preserve completed lectures
                 val existingAudit = lectureDao().getTrackerSync("AUDIT")
                 val existingCosting = lectureDao().getTrackerSync("COSTING")
                 lectureDao().insertOrUpdate(
@@ -104,7 +104,7 @@ abstract class AppDatabase : RoomDatabase() {
                         totalLectures = 65,
                         completedLectures = existingAudit?.completedLectures ?: 0,
                         dailyTarget = 1,
-                        lectureDurationMinutes = 105
+                        lectureDurationMinutes = 150
                     )
                 )
             }

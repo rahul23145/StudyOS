@@ -34,8 +34,8 @@ class TimetableViewModel(
             repository.removeDuplicates()
             val activeId = repository.getActiveScheduleTypeSync()?.id ?: 1L
             val day1Items = repository.getScheduleForDaySync(1, activeId)
-            val hasLiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) }
-            if (day1Items.isNotEmpty() && !hasLiveAudit) {
+            val has745LiveAudit = day1Items.any { it.title.contains("Live Audit", ignoreCase = true) && it.startTime == "07:45" }
+            if (day1Items.isNotEmpty() && !has745LiveAudit) {
                 repository.resetScheduleForType(activeId)
             }
         }
