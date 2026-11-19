@@ -50,7 +50,8 @@ class TodayScheduleAdapter(
             } else {
                 "${item.durationMinutes} min"
             }
-            binding.tvTime.text = "⏱️ $durationFormatted • ~${item.startTime} (Flexible)"
+            val start12 = com.studyos.cainter.util.DateUtils.formatTo12Hour(item.startTime)
+            binding.tvTime.text = "⏱️ $durationFormatted • ~$start12 (Flexible)"
             binding.tvNotes.text = if (item.notes.isNotBlank()) item.notes else "No notes"
 
             val category = item.getCategoryEnum()

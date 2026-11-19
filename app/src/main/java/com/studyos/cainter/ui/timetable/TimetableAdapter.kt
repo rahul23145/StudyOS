@@ -41,8 +41,8 @@ class TimetableAdapter(
             } else {
                 "${item.durationMinutes}m"
             }
-            binding.tvStartTime.text = item.startTime
-            binding.tvEndTime.text = item.endTime
+            binding.tvStartTime.text = com.studyos.cainter.util.DateUtils.formatTo12Hour(item.startTime)
+            binding.tvEndTime.text = com.studyos.cainter.util.DateUtils.formatTo12Hour(item.endTime)
             binding.tvDuration.text = durationFormatted
             binding.tvNotes.text = if (item.notes.isNotBlank()) item.notes else "No notes"
 

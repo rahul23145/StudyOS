@@ -40,7 +40,11 @@ class SequenceTaskAdapter(
         val hours = task.durationMinutes / 60
         val mins = task.durationMinutes % 60
         val durationStr = if (hours > 0 && mins > 0) "${hours}h ${mins}m" else if (hours > 0) "${hours}h" else "${mins}m"
-        val timeRange = if (task.startTime.isNotBlank() && task.endTime.isNotBlank()) "~${task.startTime}–${task.endTime} • " else ""
+        val timeRange = if (task.startTime.isNotBlank() && task.endTime.isNotBlank()) {
+            val start12 = com.studyos.cainter.util.DateUtils.formatTo12Hour(task.startTime)
+            val end12 = com.studyos.cainter.util.DateUtils.formatTo12Hour(task.endTime)
+            "~$start12–$end12 • "
+        } else ""
         holder.binding.tvSequenceTaskDuration.text = "$timeRange$durationStr"
 
         val context = holder.itemView.context

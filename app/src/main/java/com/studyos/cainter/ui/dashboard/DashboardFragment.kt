@@ -214,19 +214,19 @@ class DashboardFragment : Fragment() {
                         val durStr = if (current.durationMinutes >= 60) "${current.durationMinutes / 60}h ${current.durationMinutes % 60}m" else "${current.durationMinutes}m"
                         binding.tvFocusLabel.text = "CURRENT FOCUS BLOCK"
                         binding.tvCurrentActivityTitle.text = current.title
-                        binding.tvCurrentActivityTime.text = "⏱️ $durStr block • Target ~${current.startTime} (Flexible)"
+                        binding.tvCurrentActivityTime.text = "⏱️ $durStr block • Target ~${com.studyos.cainter.util.DateUtils.formatTo12Hour(current.startTime)} (Flexible)"
                     } else {
                         binding.tvFocusLabel.text = "UPCOMING FOCUS BLOCK"
                         binding.tvCurrentActivityTitle.text = state.nextItem?.title ?: "Free Review / Rest"
                         binding.tvCurrentActivityTime.text = state.nextItem?.let {
                             val durStr = if (it.durationMinutes >= 60) "${it.durationMinutes / 60}h ${it.durationMinutes % 60}m" else "${it.durationMinutes}m"
-                            "⏱️ $durStr block • Target ~${it.startTime} (Flexible)"
+                            "⏱️ $durStr block • Target ~${com.studyos.cainter.util.DateUtils.formatTo12Hour(it.startTime)} (Flexible)"
                         } ?: "Plan your next milestone"
                     }
 
                     if (state.nextItem != null && state.currentItem != null) {
                         binding.tvUpNext.visibility = View.VISIBLE
-                        binding.tvUpNext.text = "Next: ${state.nextItem.title} (~${state.nextItem.startTime})"
+                        binding.tvUpNext.text = "Next: ${state.nextItem.title} (~${com.studyos.cainter.util.DateUtils.formatTo12Hour(state.nextItem.startTime)})"
                     } else {
                         binding.tvUpNext.visibility = View.GONE
                     }

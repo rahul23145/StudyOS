@@ -85,6 +85,57 @@ class TimerViewModel(
         TimerController.onDoneNextListener = {
             finishCurrentTaskEarly()
         }
+
+        // Connect to persistent background TimerSessionManager
+        viewModelScope.launch {
+            com.studyos.cainter.util.TimerSessionManager.sessionState.collect { session ->
+                when (session.state) {
+                    com.studyos.cainter.util.SessionTimerState.RUNNING -> {
+                        _uiState.value = _uiState.value.copy(
+                            presetTitle = session.taskTitle,
+                            totalSeconds = session.totalSeconds,
+                            remainingSeconds = session.remainingSeconds,
+                            formattedTime = session.formattedTime,
+                            progressPercent = session.progressPercent,
+                            state = TimerState.RUNNING,
+                            isRealTimeSynced = false,
+                            scheduledEndTime = session.scheduledEndTime
+                        )
+                    }
+                    com.studyos.cainter.util.SessionTimerState.PAUSED -> {
+                        _uiState.value = _uiState.value.copy(
+                            presetTitle = session.taskTitle,
+                            totalSeconds = session.totalSeconds,
+                            remainingSeconds = session.remainingSeconds,
+                            formattedTime = session.formattedTime,
+                            progressPercent = session.progressPercent,
+                            state = TimerState.PAUSED,
+                            isRealTimeSynced = false
+                        )
+                    }
+                    com.studyos.cainter.util.SessionTimerState.FINISHED -> {
+                        if (_uiState.value.state == TimerState.RUNNING) {
+                            handleTaskFinished()
+                        }
+                    }
+                    com.studyos.cainter.util.SessionTimerState.IDLE -> {
+                        // Managed locally when timer is idle
+                    }
+                }
+            }
+        }
+
+        com.studyos.cainter.util.TimerSessionManager.onSessionFinishedListener = { _, _ ->
+            viewModelScope.launch {
+                handleTaskFinished()
+            }
+        }
+        com.studyos.cainter.util.TimerSessionManager.onAdvanceNextListener = {
+            viewModelScope.launch {
+                advanceToNextScheduleSlot()
+            }
+        }
+
         loadTodayScheduleAsSequence()
 
         viewModelScope.launch {
@@ -478,14 +529,26 @@ class TimerViewModel(
     }
 
     private fun startTimer() {
-        timerJob?.cancel()
         realTimeSyncJob?.cancel()
         _uiState.value = _uiState.value.copy(state = TimerState.RUNNING, isRealTimeSynced = false)
 
-        FocusGuardService.startService(
-            getApplication(),
-            _uiState.value.presetTitle,
-            _uiState.value.formattedTime
+        val currentTask = if (_isSequenceMode.value && _currentSequenceIndex.value in _sequenceQueue.value.indices) {
+            _sequenceQueue.value[_currentSequenceIndex.value]
+        } else null
+
+        val totalSec = _uiState.value.totalSeconds
+        val remSec = _uiState.value.remainingSeconds
+        val targetEndTimeMs = System.currentTimeMillis() + remSec * 1000L
+
+        FocusGuardService.startFocusSession(
+            context = getApplication(),
+            taskTitle = _uiState.value.presetTitle,
+            totalSeconds = totalSec,
+            remainingSeconds = remSec,
+            targetEndTimeMs = targetEndTimeMs,
+            scheduleItemId = currentTask?.scheduleItemId,
+            scheduledEndTime = _uiState.value.scheduledEndTime,
+            autoAdvance = _isAutoAdvanceEnabled.value
         )
         ZeroDistractionGuard.setSessionActive(
             getApplication(),
@@ -493,47 +556,9 @@ class TimerViewModel(
             _uiState.value.presetTitle,
             _uiState.value.formattedTime
         )
-
-        timerJob = viewModelScope.launch {
-            while (_uiState.value.remainingSeconds > 0) {
-                delay(1000L)
-                val newRemaining = _uiState.value.remainingSeconds - 1
-                val total = _uiState.value.totalSeconds
-                val progress = if (total > 0) ((newRemaining * 100) / total).toInt() else 0
-                val formatted = formatSeconds(newRemaining)
-                _uiState.value = _uiState.value.copy(
-                    remainingSeconds = newRemaining,
-                    formattedTime = formatted,
-                    progressPercent = progress
-                )
-
-                FocusGuardService.updateService(
-                    getApplication(),
-                    _uiState.value.presetTitle,
-                    formatted
-                )
-                ZeroDistractionGuard.setSessionActive(
-                    getApplication(),
-                    true,
-                    _uiState.value.presetTitle,
-                    formatted
-                )
-
-                // Enforce Zero Distraction Mode: check if user opened a blocked app
-                ZeroDistractionGuard.checkAndBlockForegroundApp(
-                    getApplication(),
-                    _uiState.value.presetTitle,
-                    formatted
-                )
-            }
-
-            // Current Task Finished!
-            handleTaskFinished()
-        }
     }
 
     private suspend fun handleTaskFinished() {
-        FocusGuardService.stopService(getApplication())
         ZeroDistractionGuard.setSessionActive(getApplication(), false)
 
         _uiState.value = _uiState.value.copy(
@@ -592,14 +617,12 @@ class TimerViewModel(
     }
 
     fun pauseTimer() {
-        timerJob?.cancel()
         _uiState.value = _uiState.value.copy(state = TimerState.PAUSED)
-        FocusGuardService.stopService(getApplication())
+        FocusGuardService.pauseOrResume(getApplication())
         ZeroDistractionGuard.setSessionActive(getApplication(), false)
     }
 
     fun resetTimer() {
-        timerJob?.cancel()
         realTimeSyncJob?.cancel()
         FocusGuardService.stopService(getApplication())
         ZeroDistractionGuard.setSessionActive(getApplication(), false)
@@ -640,10 +663,11 @@ class TimerViewModel(
         super.onCleared()
         TimerController.onPauseResumeListener = null
         TimerController.onDoneNextListener = null
-        timerJob?.cancel()
+        com.studyos.cainter.util.TimerSessionManager.onSessionFinishedListener = null
+        com.studyos.cainter.util.TimerSessionManager.onAdvanceNextListener = null
         realTimeSyncJob?.cancel()
-        FocusGuardService.stopService(getApplication())
-        ZeroDistractionGuard.setSessionActive(getApplication(), false)
+        // Do NOT stop FocusGuardService here!
+        // The foreground service keeps the timer running accurately in the background with WakeLock and notification.
     }
 
     class Factory(

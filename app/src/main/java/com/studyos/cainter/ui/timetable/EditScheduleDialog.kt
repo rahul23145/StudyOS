@@ -53,8 +53,8 @@ class EditScheduleDialog : DialogFragment() {
         if (item != null) {
             binding.tvDialogTitle.text = "Edit Activity"
             binding.etTitle.setText(item.title)
-            binding.etStartTime.setText(item.startTime)
-            binding.etEndTime.setText(item.endTime)
+            binding.etStartTime.setText(com.studyos.cainter.util.DateUtils.formatTo12Hour(item.startTime))
+            binding.etEndTime.setText(com.studyos.cainter.util.DateUtils.formatTo12Hour(item.endTime))
             binding.etNotes.setText(item.notes)
             binding.spinnerDay.setSelection((item.dayOfWeek - 1).coerceIn(0, 6))
 
@@ -62,7 +62,31 @@ class EditScheduleDialog : DialogFragment() {
             if (catIndex >= 0) binding.spinnerCategory.setSelection(catIndex)
         } else {
             binding.tvDialogTitle.text = "Add New Activity"
+            binding.etStartTime.setText("09:00 AM")
+            binding.etEndTime.setText("10:00 AM")
             binding.spinnerDay.setSelection((defaultDay - 1).coerceIn(0, 6))
+        }
+
+        binding.etStartTime.setOnClickListener {
+            val current = com.studyos.cainter.util.DateUtils.to24Hour(binding.etStartTime.text.toString())
+            val parts = current.split(":")
+            val h = parts[0].toIntOrNull() ?: 9
+            val m = if (parts.size > 1) parts[1].toIntOrNull() ?: 0 else 0
+            android.app.TimePickerDialog(requireContext(), { _, hourOfDay, minute ->
+                val time24 = String.format(java.util.Locale.US, "%02d:%02d", hourOfDay, minute)
+                binding.etStartTime.setText(com.studyos.cainter.util.DateUtils.formatTo12Hour(time24))
+            }, h, m, false).show()
+        }
+
+        binding.etEndTime.setOnClickListener {
+            val current = com.studyos.cainter.util.DateUtils.to24Hour(binding.etEndTime.text.toString())
+            val parts = current.split(":")
+            val h = parts[0].toIntOrNull() ?: 10
+            val m = if (parts.size > 1) parts[1].toIntOrNull() ?: 0 else 0
+            android.app.TimePickerDialog(requireContext(), { _, hourOfDay, minute ->
+                val time24 = String.format(java.util.Locale.US, "%02d:%02d", hourOfDay, minute)
+                binding.etEndTime.setText(com.studyos.cainter.util.DateUtils.formatTo12Hour(time24))
+            }, h, m, false).show()
         }
 
         return MaterialAlertDialogBuilder(requireContext())
@@ -71,13 +95,16 @@ class EditScheduleDialog : DialogFragment() {
                 val title = binding.etTitle.text.toString().trim()
                 if (title.isBlank()) return@setPositiveButton
 
-                val startTime = binding.etStartTime.text.toString().trim().ifBlank { "09:00" }
-                val endTime = binding.etEndTime.text.toString().trim().ifBlank { "10:00" }
+                val rawStart = binding.etStartTime.text.toString().trim().ifBlank { "09:00 AM" }
+                val rawEnd = binding.etEndTime.text.toString().trim().ifBlank { "10:00 AM" }
+                val startTime24 = com.studyos.cainter.util.DateUtils.to24Hour(rawStart)
+                val endTime24 = com.studyos.cainter.util.DateUtils.to24Hour(rawEnd)
+
                 val selectedDay = binding.spinnerDay.selectedItemPosition + 1
                 val selectedCategory = ScheduleCategory.entries[binding.spinnerCategory.selectedItemPosition].name
                 val notes = binding.etNotes.text.toString().trim()
 
-                val durationMinutes = calculateDuration(startTime, endTime)
+                val durationMinutes = calculateDuration(startTime24, endTime24)
 
                 val savedItem = ScheduleItem(
                     id = item?.id ?: 0L,
@@ -85,8 +112,8 @@ class EditScheduleDialog : DialogFragment() {
                     dayOfWeek = selectedDay,
                     title = title,
                     category = selectedCategory,
-                    startTime = startTime,
-                    endTime = endTime,
+                    startTime = startTime24,
+                    endTime = endTime24,
                     durationMinutes = durationMinutes,
                     notes = notes,
                     sortOrder = item?.sortOrder ?: 99,
@@ -100,12 +127,14 @@ class EditScheduleDialog : DialogFragment() {
 
     private fun calculateDuration(start: String, end: String): Int {
         return try {
+            val s24 = com.studyos.cainter.util.DateUtils.to24Hour(start)
+            val e24 = com.studyos.cainter.util.DateUtils.to24Hour(end)
             val formatter = DateTimeFormatter.ofPattern("HH:mm")
-            val startTime = LocalTime.parse(start, formatter)
-            val endTime = LocalTime.parse(end, formatter)
+            val startTime = LocalTime.parse(s24, formatter)
+            val endTime = LocalTime.parse(e24, formatter)
             val minutes = ChronoUnit.MINUTES.between(startTime, endTime).toInt()
             if (minutes > 0) minutes else (minutes + 1440)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             60
         }
     }

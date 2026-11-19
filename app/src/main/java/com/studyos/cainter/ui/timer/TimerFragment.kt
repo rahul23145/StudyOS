@@ -311,9 +311,6 @@ class TimerFragment : Fragment() {
 
         if (hasUsage && hasOverlay) {
             ZeroDistractionGuard.setEnabled(ctx, true)
-            val activeTitle = viewModel.uiState.value.presetTitle
-            val activeRemaining = viewModel.uiState.value.formattedTime
-            FocusGuardService.startService(ctx, activeTitle, activeRemaining)
         } else {
             ZeroDistractionGuard.setEnabled(ctx, false)
         }
@@ -369,7 +366,8 @@ class TimerFragment : Fragment() {
                                 binding.btnStartPauseTimer.text = "Start Focus"
                                 binding.btnStartPauseTimer.setIconResource(R.drawable.ic_play)
                                 if (state.isRealTimeSynced && state.scheduledEndTime.isNotBlank()) {
-                                    binding.tvTimerStatus.text = "REAL TIME • Slot ends ~${state.scheduledEndTime}"
+                                    val end12 = com.studyos.cainter.util.DateUtils.formatTo12Hour(state.scheduledEndTime)
+                                    binding.tvTimerStatus.text = "REAL TIME • Slot ends ~$end12"
                                 } else {
                                     binding.tvTimerStatus.text = "READY TO FOCUS"
                                 }

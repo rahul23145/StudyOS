@@ -49,7 +49,8 @@ class StudyOSGlanceWidget : AppWidgetProvider() {
                 val taskTitle = displayItem?.title ?: "Free Review / Rest"
                 val taskTime = displayItem?.let {
                     val durStr = if (it.durationMinutes >= 60) "${it.durationMinutes / 60}h ${it.durationMinutes % 60}m" else "${it.durationMinutes}m"
-                    "⏱️ $durStr • ~${it.startTime} (Flexible)"
+                    val start12 = com.studyos.cainter.util.DateUtils.formatTo12Hour(it.startTime)
+                    "⏱️ $durStr • ~$start12 (Flexible)"
                 } ?: "Plan your next milestone"
 
                 views.setTextViewText(R.id.tvWidgetTaskTitle, taskTitle)
