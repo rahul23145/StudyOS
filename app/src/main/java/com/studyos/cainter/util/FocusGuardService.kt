@@ -13,8 +13,8 @@ import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.studyos.cainter.R
-import com.studyos.cainter.data.local.AppDatabase
-import com.studyos.cainter.data.local.entity.ScheduleCompletion
+import com.studyos.cainter.StudyOSApplication
+import com.studyos.cainter.data.local.entity.CompletionRecord
 import com.studyos.cainter.data.local.entity.StudySession
 import com.studyos.cainter.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -323,8 +323,9 @@ class FocusGuardService : Service() {
         // 3. Automatically log study session to Room Database
         serviceScope.launch(Dispatchers.IO) {
             try {
-                val db = AppDatabase.getInstance(applicationContext)
-                db.studySessionDao().insertSession(
+                val app = applicationContext as? StudyOSApplication
+                val db = app?.database
+                db?.studySessionDao()?.insertSession(
                     StudySession(
                         subject = taskTitle,
                         category = "STUDY",
@@ -335,8 +336,8 @@ class FocusGuardService : Service() {
                 )
                 val itemId = currentScheduleItemId
                 if (itemId != null && itemId > 0) {
-                    db.scheduleDao().insertCompletion(
-                        ScheduleCompletion(
+                    db?.completionDao()?.saveCompletion(
+                        CompletionRecord(
                             scheduleItemId = itemId,
                             date = DateUtils.getTodayDateString(),
                             isCompleted = true,
