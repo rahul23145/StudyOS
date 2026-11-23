@@ -138,8 +138,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: android.content.Intent?) {
-        if (intent?.getStringExtra("NAVIGATE_TO") == "TIMER") {
-            binding.bottomNavigation.selectedItemId = R.id.navigation_timer
+        when (intent?.getStringExtra("NAVIGATE_TO")?.uppercase(java.util.Locale.US)) {
+            "TIMER" -> binding.bottomNavigation.selectedItemId = R.id.navigation_timer
+            "TIMETABLE" -> binding.bottomNavigation.selectedItemId = R.id.navigation_timetable
+            "LECTURES" -> binding.bottomNavigation.selectedItemId = R.id.navigation_lectures
+            "ANALYTICS", "PROGRESS" -> binding.bottomNavigation.selectedItemId = R.id.navigation_analytics
+            "DASHBOARD" -> binding.bottomNavigation.selectedItemId = R.id.navigation_dashboard
+            "GYM" -> startActivity(android.content.Intent(this, com.studyos.cainter.ui.gym.GymLedgerActivity::class.java))
+            "OPTIMIZE_ROUTINE" -> {
+                val today = DateUtils.getTodayDayOfWeek()
+                val dialog = com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.newInstance(today, 1L)
+                dialog.show(supportFragmentManager, com.studyos.cainter.ui.timetable.SmartRoutineOptimizerDialog.TAG)
+            }
+            "MENTOR_PDF" -> generateMentorPdfReport()
         }
     }
 

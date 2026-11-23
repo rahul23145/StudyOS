@@ -74,7 +74,7 @@ class LecturesFragment : Fragment() {
 
     private fun setupCaInterAppView() {
         binding.tvLecturesTitle.text = "CA Inter Lecture Progress"
-        binding.tvLecturesSubtitle.text = "2x Costing (2h18m) • 2x Audit (1h30m Mon–Sat) • Sunday Audit-Only"
+        binding.tvLecturesSubtitle.text = "Live Audit 07:45 AM (2h30m) • 2x Costing (2h18m) • Problem Revision"
         binding.btnAddSubject.visibility = View.GONE
         binding.rvCustomSubjects.visibility = View.GONE
         binding.layoutCaInterCards.visibility = View.VISIBLE
@@ -86,7 +86,7 @@ class LecturesFragment : Fragment() {
             viewModel.decrementLecture("COSTING")
         }
         binding.btnAuditPlus.setOnClickListener {
-            viewModel.incrementLecture("AUDIT", 90)
+            viewModel.incrementLecture("AUDIT", 150)
         }
         binding.btnAuditMinus.setOnClickListener {
             viewModel.decrementLecture("AUDIT")

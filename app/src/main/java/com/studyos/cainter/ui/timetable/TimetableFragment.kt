@@ -150,9 +150,9 @@ class TimetableFragment : Fragment() {
     private fun updateOverviewBadge(day: Int, type: ScheduleType) {
         if (type.id == 1L && !BuildConfig.IS_CUSTOM_APP) {
             binding.tvDayOverviewBadge.text = when (day) {
-                1, 3, 5 -> "MWF Routine • Tuition 6:00–7:00 PM • Costing 2x (2h18m) + Audit 2x (1h30m) • Gym 1h"
-                2, 4, 6 -> "TTSS Routine • Running 6:30–7:15 PM • Costing 2x (2h18m) + Audit 2x (1h30m) • Gym 1h"
-                7 -> "Sunday Audit-Only • 3x 2-Hour Study Blocks • 2x Audit Lectures • TTSS Running"
+                1, 3, 5 -> "MWF Routine • Tuition 6:00–7:00 PM • Live Audit (2h30m) + Costing 2x (2h18m) • Gym 1h"
+                2, 4, 6 -> "TTSS Routine • Running 6:30–7:15 PM • Live Audit (2h30m) + Costing 2x (2h18m) • Gym 1h"
+                7 -> "Sunday Audit-Only • 3x 2-Hour Study Blocks • Live Audit Concept Revision • TTSS Running"
                 else -> "Standard CA Inter Schedule"
             }
         } else {

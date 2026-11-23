@@ -28,16 +28,17 @@ class LecturesViewModel(
     fun incrementLecture(subject: String, duration: Int = 60) {
         viewModelScope.launch {
             repository.incrementLecture(subject)
-            val sessionDuration = when (subject) {
+            val currentTracker = _trackers.value.firstOrNull { it.subject == subject }
+            val sessionDuration = currentTracker?.lectureDurationMinutes ?: when (subject) {
                 "COSTING" -> 138
-                "AUDIT" -> 90
+                "AUDIT" -> 150
                 else -> duration
             }
             repository.logSession(
                 subject = subject,
                 category = subject,
                 durationMinutes = sessionDuration,
-                notes = "Completed $subject session"
+                notes = "Completed ${currentTracker?.displayName ?: subject} session"
             )
         }
     }

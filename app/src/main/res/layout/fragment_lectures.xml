@@ -244,7 +244,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Paper 5 • 2 Lectures Daily Mon–Sat (1h 30m each)"
+                                android:text="Paper 5 • Live Audit 07:45–10:15 AM (2h 30m)"
                                 android:textColor="@color/category_audit"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -360,7 +360,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Zero Costing Lectures on Sunday. Sundays are strictly reserved for 2-hour Audit SA deep-dive study blocks, mock tests, and 2 Audit lecture sessions to master Paper 5 theory and standards."
+                        android:text="Zero Costing Lectures on Sunday. Sundays are strictly reserved for 2-hour Audit SA deep-dive study blocks, mock tests, and Audit concept revision to master Paper 5 theory and standards."
                         android:textColor="@color/text_primary_light"
                         android:textSize="13sp" />
                 </LinearLayout>
